@@ -121,8 +121,8 @@ function App() {
             {jobId && (
               <div>
                 <p>Generating with jobId: {jobId}</p>
-                <CircularProgress variant="determinate" value={progress} />
-                {progress > 0 && <p>Progress: {progress}%</p>}
+                { progress == 0 && <CircularProgress />} 
+                {( progress > 0 ) && <CircularProgress variant="determinate" value={progress} />}
                 {done && <p>Done!</p>}
               </div>
             )}
