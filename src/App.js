@@ -1,21 +1,55 @@
 import React, { useState } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
-import { TextField, Button, createTheme, ThemeProvider, Grid, CircularProgress } from '@mui/material';
+import { TextField, Button, createTheme, ThemeProvider, Grid, CircularProgress, FormControl, Select, MenuItem } from '@mui/material';
 import MarkdownViewer from './MarkdownViewer';
-
+import DynamicForm from './DynamicForm';
 
 const apiUrl = 'http://localhost:3000';
 const socket = io(apiUrl);
 
-
-
 function App() {
-  const [details, setDetails] = useState({
-    context: '',
-    actors: '',
-    initiative: '',
+
+  const endpoints = [
+    {
+      name: 'PRD Generation',
+      url: '/api/generatePRD',
+      details: {
+        context: '',
+        actors: '',
+        initiative: ''
+      }
+    },
+    {
+      name: 'Task Debug Endpoint',
+      url: '/api/taskTest',
+      details: {
+        context: '',
+        actors: '',
+        initiative: '',
+        requirements: ''
+      }
+    },
+    // add more endpoints here
+  ];
+
+
+  const [endpointDetails, setEndpointDetails] = useState({
+    details: {},
+    url: '',
   });
+
+  const [selectedEndpoint, setSelectedEndpoint] = useState('');
+
+  const handleEndpointChange = (event) => {
+    setSelectedEndpoint(event.target.value);
+    const selectedEndpointObj = endpoints.find((endpoint) => endpoint.name === event.target.value);
+    console.log(selectedEndpointObj)
+    setEndpointDetails({
+      details: selectedEndpointObj.details,
+      url: selectedEndpointObj.url,
+    });
+  };
 
   const [jobId, setJobId] = useState(null);
   const [progress, setProgress] = useState(0);
@@ -23,28 +57,17 @@ function App() {
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-    setDetails((prevState) => ({
+    setEndpointDetails((prevState) => ({
       ...prevState,
       [name]: value,
     }));
   };
 
-  const fields = Object.keys(details).map((fieldName) => (
-    <TextField
-      fullWidth
-      id="standard-basic"
-      onChange={handleInputChange}
-      label={fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}
-      variant="standard"
-      name={fieldName}
-    />
-  ));
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     setProgress(0);
     setDone(false);
-    const jobId = await generatePRD(details, 1);
+    const jobId = await startJob(endpointDetails.details, 1);
     setJobId(jobId);
   };
 
@@ -71,9 +94,9 @@ function App() {
     console.log(`connect_error due to ${err.message}`);
   });
 
-  const generatePRD = async (details, temperature) => {
+  const startJob = async (details, temperature) => {
     try {
-      const response = await axios.post(apiUrl + '/api/generatePRD', {
+      const response = await axios.post(apiUrl + endpointDetails.url, {
         details: details,
         temperature: temperature,
       });
@@ -130,8 +153,20 @@ function App() {
       <Grid container spacing={2}>
         <Grid xs={4}>
           <div>
+          <FormControl fullWidth>
+          <Select value={selectedEndpoint} onChange={handleEndpointChange}>
+            <MenuItem value="">
+              Select an endpoint
+            </MenuItem>
+            {endpoints.map(endpoint => (
+              <MenuItem key={endpoint.name} value={endpoint.name}>
+                {endpoint.name}
+              </MenuItem>
+            ))}
+          </Select>
+          </FormControl>
             <form onSubmit={handleSubmit}>
-            {fields}
+            <DynamicForm endpointDetails={endpointDetails} handleInputChange={handleInputChange} />
             <Button fullWidth variant="contained" type="submit">Generate PRD</Button>
             </form>
             {jobId && (

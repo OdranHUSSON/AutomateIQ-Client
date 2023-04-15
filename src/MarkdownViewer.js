@@ -11,7 +11,7 @@ function MarkdownViewer({ jobId, progress }) {
       return;
     }
 
-    if (progress !== 100) {
+    if (progress === 0) {
       setMarkdownContent('Output is generating...');
       return;
     }
