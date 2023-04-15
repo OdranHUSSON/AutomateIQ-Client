@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
 import { TextField, Button, createTheme, ThemeProvider, Grid, CircularProgress } from '@mui/material';
+import MarkdownViewer from './MarkdownViewer';
 
 
 const apiUrl = 'http://localhost:3000';
 const socket = io(apiUrl);
+
+
 
 function App() {
   const [details, setDetails] = useState({
@@ -66,7 +69,8 @@ function App() {
       throw new Error(error.response.data.error);
     }
   };
-
+  
+  
   function Header() {
     const [ darkMode, setDarkMode ] = React.useState(true)
      
@@ -110,7 +114,7 @@ function App() {
       <Header />
       <div id="container">
       <Grid container spacing={2}>
-        <Grid xs={8}>
+        <Grid xs={4}>
           <div>
             <form onSubmit={handleSubmit}>
             <TextField fullWidth id="standard-basic" onChange={handleInputChange} label="Context" variant="standard"  name="context"/>
@@ -128,8 +132,11 @@ function App() {
             )}
           </div>
         </Grid>
-        <Grid xs={4}>
+        <Grid xs={8}>
           <h2>Outputs</h2>
+          {jobId && (
+            <MarkdownViewer jobId={jobId} progress={progress} />
+          )}
         </Grid>
       </Grid>  
       </div>
