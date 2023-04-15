@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
-import { TextField, Button, createTheme, ThemeProvider, Grid, Form } from '@mui/material';
+import { TextField, Button, createTheme, ThemeProvider, Grid, CircularProgress } from '@mui/material';
 
 
 const apiUrl = 'http://localhost:3000';
@@ -121,6 +121,7 @@ function App() {
             {jobId && (
               <div>
                 <p>Generating with jobId: {jobId}</p>
+                <CircularProgress variant="determinate" value={progress} />
                 {progress > 0 && <p>Progress: {progress}%</p>}
                 {done && <p>Done!</p>}
               </div>
