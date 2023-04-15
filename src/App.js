@@ -23,8 +23,22 @@ function App() {
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-    setDetails({ ...details, [name]: value });
+    setDetails((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
   };
+
+  const fields = Object.keys(details).map((fieldName) => (
+    <TextField
+      fullWidth
+      id="standard-basic"
+      onChange={handleInputChange}
+      label={fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}
+      variant="standard"
+      name={fieldName}
+    />
+  ));
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -117,9 +131,7 @@ function App() {
         <Grid xs={4}>
           <div>
             <form onSubmit={handleSubmit}>
-            <TextField fullWidth id="standard-basic" onChange={handleInputChange} label="Context" variant="standard"  name="context"/>
-            <TextField fullWidth id="standard-basic" onChange={handleInputChange} label="Actors" variant="standard"  name="actors"/>
-            <TextField fullWidth id="standard-basic" onChange={handleInputChange} label="Initiative" variant="standard"  name="initiative"/>
+            {fields}
             <Button fullWidth variant="contained" type="submit">Generate PRD</Button>
             </form>
             {jobId && (
