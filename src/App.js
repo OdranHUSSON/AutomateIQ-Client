@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
+import { TextField, Button, createTheme, ThemeProvider, Grid, Form } from '@mui/material';
+
 
 const apiUrl = 'http://localhost:3000';
 const socket = io(apiUrl);
@@ -65,34 +67,73 @@ function App() {
     }
   };
 
-  return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Context:
-          <input type="text" name="context" value={details.context} onChange={handleInputChange} />
-        </label>
-        <br />
-        <label>
-          Actors:
-          <input type="text" name="actors" value={details.actors} onChange={handleInputChange} />
-        </label>
-        <br />
-        <label>
-          Initiative:
-          <input type="text" name="initiative" value={details.initiative} onChange={handleInputChange} />
-        </label>
-        <br />
-        <button type="submit">Generate PRD</button>
-      </form>
-      {jobId && (
-        <div>
-          <p>Generating with jobId: {jobId}</p>
-          {progress > 0 && <p>Progress: {progress}%</p>}
-          {done && <p>Done!</p>}
+  function Header() {
+    const [ darkMode, setDarkMode ] = React.useState(true)
+     
+    React.useEffect(() => {
+      const body = document.body
+      const toggle = document.querySelector('.toggle-inner')
+      
+      // If dark mode is enabled - adds classes to update dark-mode styling.
+      // Else, removes and styling is as normal.
+      if( darkMode === true ) {
+        body.classList.add('dark-mode')
+        toggle.classList.add('toggle-active')
+      } else {
+        body.classList.remove('dark-mode')
+        toggle.classList.remove('toggle-active')
+      }
+    }, [darkMode])
+    
+    return (
+      <header>
+        <div
+          id="toggle"
+          onClick={() => darkMode === false ? setDarkMode(true) : setDarkMode(false)}
+        >
+          <div className="toggle-inner"/>
         </div>
-      )}
-    </div>
+      </header>
+    )
+  }
+
+  const darkTheme = createTheme({
+    palette: {
+      mode: 'dark',
+    },
+  });
+  
+
+  return (
+    <ThemeProvider theme={darkTheme}>
+    <main>
+      <Header />
+      <div id="container">
+      <Grid container spacing={2}>
+        <Grid xs={8}>
+          <div>
+            <form onSubmit={handleSubmit}>
+            <TextField fullWidth id="standard-basic" onChange={handleInputChange} label="Context" variant="standard"  name="context"/>
+            <TextField fullWidth id="standard-basic" onChange={handleInputChange} label="Actors" variant="standard"  name="actors"/>
+            <TextField fullWidth id="standard-basic" onChange={handleInputChange} label="Initiative" variant="standard"  name="initiative"/>
+            <Button fullWidth variant="contained" type="submit">Generate PRD</Button>
+            </form>
+            {jobId && (
+              <div>
+                <p>Generating with jobId: {jobId}</p>
+                {progress > 0 && <p>Progress: {progress}%</p>}
+                {done && <p>Done!</p>}
+              </div>
+            )}
+          </div>
+        </Grid>
+        <Grid xs={4}>
+          <h2>Outputs</h2>
+        </Grid>
+      </Grid>  
+      </div>
+    </main>
+    </ThemeProvider>
   );
 }
 
