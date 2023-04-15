@@ -12,12 +12,23 @@ function App() {
 
   const endpoints = [
     {
-      name: 'PRD Generation',
-      url: '/api/generatePRD',
+      name: 'Task Debug Endpoint',
+      url: '/api/taskTest',
       details: {
         context: '',
         actors: '',
-        initiative: ''
+        initiative: '',
+        requirements: ''
+      }
+    },
+    {
+      name: 'Generate Card',
+      url: '/api/generateCard',
+      details: {
+        context: '',
+        actors: '',
+        featureName: '',
+        featureDescription: ''
       }
     },
     {
@@ -56,11 +67,26 @@ function App() {
   const [done, setDone] = useState(false);
 
   const handleInputChange = (event) => {
+
     const { name, value } = event.target;
-    setEndpointDetails((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    console.log(name);
+    console.log(value)
+
+    const updatedDetails = {
+      ...endpointDetails.details,
+      [name]: value
+    };
+  
+    // Merge the updated object with the original endpointDetails object
+    const updatedEndpointDetails = {
+      ...endpointDetails,
+      details: updatedDetails
+    };
+
+    console.log(updatedEndpointDetails)
+
+
+    setEndpointDetails((prevState) => (updatedEndpointDetails));
   };
 
   const handleSubmit = async (event) => {
@@ -167,7 +193,7 @@ function App() {
           </FormControl>
             <form onSubmit={handleSubmit}>
             <DynamicForm endpointDetails={endpointDetails} handleInputChange={handleInputChange} />
-            <Button fullWidth variant="contained" type="submit">Generate PRD</Button>
+            <Button fullWidth variant="contained" type="submit">Generate</Button>
             </form>
             {jobId && (
               <div>
