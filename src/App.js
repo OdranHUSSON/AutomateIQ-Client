@@ -77,9 +77,6 @@ function App() {
       details: updatedDetails
     };
 
-    console.log(updatedEndpointDetails)
-
-
     setEndpointDetails((prevState) => (updatedEndpointDetails));
   };
 
@@ -97,23 +94,31 @@ function App() {
     setTasks([...tasks, newTask]);
   };
 
+  const addMultipleTasks = (tasks) => {
+    const newTasks = tasks.map(task => ({
+      id: task.taskId,
+      status: task.status,
+      name: task.name,
+      output: task.output
+    }));
+
+    console.log('Added multiple tasks')
+  
+    setTasks(newTasks);
+  };
+  
+
   const handleTaskUpdate = (updatedTask) => {
     // Find the task with the given id and update its status and output
-    let createTask = true;
     const updatedTasks = tasks.map(task => {
       if (task.id === updatedTask.taskId) {
-        createTask = false;
         return { ...task, status: updatedTask.status, output: updatedTask.output };
       } else {
         return task;
       }
     });
 
-    if(createTask) {
-      addTask(updatedTask);
-    } else {
-      setTasks(updatedTasks);
-    }
+    setTasks(updatedTasks);
 
     if(updatedTask.status = 'done') {
       setDisplayTask(updatedTask);
@@ -125,6 +130,7 @@ function App() {
     setTasks([]);
     setDone(false);
     setJobId(null);
+    setDisplayTask('');
   }
 
   const handleSubmit = async (event) => {
@@ -152,16 +158,9 @@ function App() {
       }
     }
   });
-
-  socket.on('Task:Create', (data) => {
-    console.log(`${data.jobId}  jobId: ${jobId}`)
-    if (data.jobId === jobId) {
-      addTask(data);
-    }
-  });
   
   socket.on('Task:Update', (data) => {
-    if (data.jobId === jobId) {
+    if (data.jobId === jobId && data.status !== "pending") {
       handleTaskUpdate(data);
     }
   });
@@ -180,6 +179,8 @@ function App() {
         details: details,
         temperature: temperature,
       });
+      console.log(response.data);
+      addMultipleTasks(response.data.tasks)
       return response.data.jobId;
     } catch (error) {
       console.log(error);
@@ -210,7 +211,6 @@ function App() {
   });
 
   function handleViewOutput(task) {
-    console.log(`handleviewoutput ${task.id}`)
     setDisplayTask(task);
   }
   
@@ -267,7 +267,7 @@ function App() {
         <Grid xs={8} p={2}>
           <Box mt={2} mb={2}>
             {CustomizedSnackbars('This is a success message', 'success', done)}
-            {jobId && (
+            {tasks && tasks != [] && (
               <div>
                 <h2>Tasks</h2>
                 <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} />
