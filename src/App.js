@@ -102,13 +102,20 @@ function App() {
     socket.emit('message', 'Hello from client');
   });
 
-  socket.on('update', (data) => {
-    console.log(`Server says job ${data.jobId} has progressed to : ${data.progress}`);
+  socket.on('Job:Update', (data) => {
     if (data.jobId === jobId) {
+      console.log(`Server says job ${data.jobId} has progressed to : ${data.progress}`);
+
       setProgress(data.progress);
       if (data.progress === 100) {
         setDone(true);
       }
+    }
+  });
+
+  socket.on('Task:Update', (data) => {
+    if (data.jobId === jobId) {
+      console.log(`Server says task ${data.taskId} has change status to ${data.status}`);
     }
   });
 
