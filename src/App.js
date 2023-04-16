@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
-import { TextField, Button, createTheme, ThemeProvider, Grid, CircularProgress, FormControl, Select, MenuItem } from '@mui/material';
+import { TextField, Button, createTheme, ThemeProvider, Grid, CircularProgress, FormControl, Select, MenuItem, Container } from '@mui/material';
 import MarkdownViewer from './MarkdownViewer';
 import DynamicForm from './DynamicForm';
 import TaskTable from './Tasks';
@@ -191,8 +191,6 @@ function App() {
       const body = document.body
       const toggle = document.querySelector('.toggle-inner')
       
-      // If dark mode is enabled - adds classes to update dark-mode styling.
-      // Else, removes and styling is as normal.
       if( darkMode === true ) {
         body.classList.add('dark-mode')
         toggle.classList.add('toggle-active')
@@ -228,7 +226,7 @@ function App() {
       <div id="container">
       <Grid container spacing={2}>
         <Grid xs={4}>
-          <div>
+          <Container>
           <FormControl fullWidth>
           <Select value={selectedEndpoint} onChange={handleEndpointChange}>
             <MenuItem value="">
@@ -255,14 +253,15 @@ function App() {
             )}
             <h2>Tasks</h2>
             <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} />
-          </div>
+          </Container>
         </Grid>
         <Grid xs={8}>
-            
-          <h2>Outputs</h2>
-          {jobId && (
-            <MarkdownViewer jobId={jobId} progress={progress} />
-          )}
+          <Container>
+            <h1>Outputs</h1>
+            {jobId && (
+              <MarkdownViewer jobId={jobId} progress={progress} />
+            )}
+          </Container>
         </Grid>
       </Grid>  
       </div>
