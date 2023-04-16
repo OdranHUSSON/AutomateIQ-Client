@@ -6,10 +6,11 @@
 }
 
 body {
-  color: #1a202c;
+  color: #FFF;
   transition: color 0.2s ease-in;
   height: 100%;
   min-height: 100%;
+  background: #1a202c;
 }
 
 #app {
@@ -55,7 +56,6 @@ header {
   display: flex;
   height: 100%;
   width: 100%;
-  padding-top: 200px;
   align-items: center;
   justify-content: center;
   flex-direction: column;
@@ -66,6 +66,11 @@ header {
 }
 #container p {
   opacity: 0.8;
+}
+
+.light-mode {
+  color: #1a202c;
+  background-color: white;
 }
 
 .dark-mode {

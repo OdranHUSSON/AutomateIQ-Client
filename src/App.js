@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
-import { TextField, Button, createTheme, ThemeProvider, Grid, CircularProgress, FormControl, Select, MenuItem, Container } from '@mui/material';
+import { InputLabel, Button, createTheme, ThemeProvider, Grid, LinearProgress, FormControl, Select, MenuItem, ButtonGroup, Box } from '@mui/material';
 import MarkdownViewer from './MarkdownViewer';
 import DynamicForm from './DynamicForm';
 import TaskTable from './Tasks';
+import CustomizedSnackbars from './Snackbar';
 
 const apiUrl = 'http://localhost:3000';
 const socket = io(apiUrl);
@@ -31,17 +32,6 @@ function App() {
         featureDescription: ''
       }
     },
-    {
-      name: 'Task Debug Endpoint',
-      url: '/api/taskTest',
-      details: {
-        context: '',
-        actors: '',
-        initiative: '',
-        requirements: ''
-      }
-    },
-    // add more endpoints here
   ];
 
 
@@ -55,7 +45,6 @@ function App() {
   const handleEndpointChange = (event) => {
     setSelectedEndpoint(event.target.value);
     const selectedEndpointObj = endpoints.find((endpoint) => endpoint.name === event.target.value);
-    console.log(selectedEndpointObj)
     setEndpointDetails({
       details: selectedEndpointObj.details,
       url: selectedEndpointObj.url,
@@ -69,8 +58,6 @@ function App() {
   const handleInputChange = (event) => {
 
     const { name, value } = event.target;
-    console.log(name);
-    console.log(value)
 
     const updatedDetails = {
       ...endpointDetails.details,
@@ -89,19 +76,10 @@ function App() {
     setEndpointDetails((prevState) => (updatedEndpointDetails));
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setProgress(0);
-    setDone(false);
-    const jobId = await startJob(endpointDetails.details, 1);
-    setJobId(jobId);
-  };
-
   // TASKS 
   const [tasks, setTasks] = useState([]);
 
   const addTask = (task) => {
-    console.log(`ADDING TASK ${task.task_id}`);
     const newTask = {
       id: task.taskId,
       status: task.status,
@@ -113,8 +91,6 @@ function App() {
   };
 
   const handleTaskUpdate = (updatedTask) => {
-    console.log("handle task udpate" + updatedTask.taskId)
-    console.log(updatedTask)
     // Find the task with the given id and update its status and output
     let createTask = true;
     const updatedTasks = tasks.map(task => {
@@ -127,14 +103,31 @@ function App() {
     });
 
     if(createTask) {
-      console.log("Create task")
       addTask(updatedTask);
     } else {
-      console.log("set task")
       setTasks(updatedTasks);
     }
   };
 
+  function reset() {
+    setProgress(0);
+    setTasks([]);
+    setDone(false);
+    setJobId(null);
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    reset();
+
+    const jobId = await startJob(endpointDetails.details, 1);
+    setJobId(jobId);
+  };
+
+  const handleReset = async (event) => {
+    event.preventDefault();
+    reset();
+  }
   socket.on('connect', () => {
     console.log('Connected to server');
     socket.emit('message', 'Hello from client');
@@ -193,23 +186,10 @@ function App() {
       
       if( darkMode === true ) {
         body.classList.add('dark-mode')
-        toggle.classList.add('toggle-active')
       } else {
         body.classList.remove('dark-mode')
-        toggle.classList.remove('toggle-active')
       }
     }, [darkMode])
-    
-    return (
-      <header>
-        <div
-          id="toggle"
-          onClick={() => darkMode === false ? setDarkMode(true) : setDarkMode(false)}
-        >
-          <div className="toggle-inner"/>
-        </div>
-      </header>
-    )
   }
 
   const darkTheme = createTheme({
@@ -225,43 +205,67 @@ function App() {
       <Header />
       <div id="container">
       <Grid container spacing={2}>
-        <Grid xs={4}>
-          <Container>
-          <FormControl fullWidth>
-          <Select value={selectedEndpoint} onChange={handleEndpointChange}>
-            <MenuItem value="">
-              Select an endpoint
-            </MenuItem>
-            {endpoints.map(endpoint => (
-              <MenuItem key={endpoint.name} value={endpoint.name}>
-                {endpoint.name}
-              </MenuItem>
-            ))}
-          </Select>
-          </FormControl>
+        <Grid xs={12} p={2}>
+          <h1>AutomateIQ</h1>
+        </Grid>
+      </Grid>
+      <Grid container spacing={2}>
+        <Grid xs={4} p={2}>
+          <Box mt={2} mb={2}>
+            <h2>Inputs</h2>
+          </Box>
+          <Box mt={2} mb={2}>
+            <FormControl fullWidth>
+            <InputLabel id='endpoint'>Select a endpoint</InputLabel>
+            <Select labelId='endpoint' label="Select a endpoint" value={selectedEndpoint} onChange={handleEndpointChange}>
+              {endpoints.map(endpoint => (
+                <MenuItem key={endpoint.name} value={endpoint.name}>
+                  {endpoint.name}
+                </MenuItem>
+              ))}
+            </Select>
+            </FormControl>
+          </Box>
+          <Box mt={2} mb={2}>
             <form onSubmit={handleSubmit}>
-            <DynamicForm endpointDetails={endpointDetails} handleInputChange={handleInputChange} />
-            <Button fullWidth variant="contained" type="submit">Generate</Button>
+              <Box mt={2} mb={4}>
+                <DynamicForm endpointDetails={endpointDetails} handleInputChange={handleInputChange} />
+              </Box>
+              <ButtonGroup fullWidth aria-label="outlined primary button group">
+                <Button variant="contained" type="submit">Generate</Button>
+                <Button type="reset" onClick={handleReset}>Reset</Button>
+              </ButtonGroup>
             </form>
+          </Box>
+          <Box mt={2} mb={2}>
             {jobId && (
               <div>
+                <h2>Job</h2>
                 <p>Generating with jobId: {jobId}</p>
-                { progress == 0 && <CircularProgress />} 
-                {( progress > 0 ) && <CircularProgress variant="determinate" value={progress} />}
-                {done && <p>Done!</p>}
+                { progress == 0 && <LinearProgress />} 
+                {( progress > 0 ) && <LinearProgress variant="determinate" value={progress} />}
               </div>
             )}
-            <h2>Tasks</h2>
-            <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} />
-          </Container>
+          </Box>
+          <Box mt={2} mb={2}>
+            {CustomizedSnackbars('This is a success message', 'success', done)}
+            {jobId && (
+              <div>
+                <h2>Tasks</h2>
+                <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} />
+              </div>
+            )}
+          </Box>
         </Grid>
-        <Grid xs={8}>
-          <Container>
-            <h1>Outputs</h1>
+        <Grid xs={8} p={2}>
+          <Box mt={2} mb={2}>
+            <h2>Outputs</h2>
+          </Box>
+          <Box mt={2} mb={2}>
             {jobId && (
               <MarkdownViewer jobId={jobId} progress={progress} />
             )}
-          </Container>
+          </Box>
         </Grid>
       </Grid>  
       </div>
