@@ -32,6 +32,15 @@ function App() {
         featureDescription: ''
       }
     },
+    {
+      name: 'Generate PRD',
+      url: '/api/generatePRD',
+      details: {
+        context: '',
+        actors: '',
+        initiative: ''
+      }
+    },
   ];
 
 
