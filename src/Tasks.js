@@ -1,7 +1,7 @@
-import React from 'react';
-import { Table, TableHead, TableRow, TableCell, TableBody, Chip } from '@mui/material';
+import React, { useCallback } from 'react';
+import { Table, TableHead, TableRow, TableCell, TableBody, Chip, Button } from '@mui/material';
 
-function TaskTable({ tasks }) {
+function TaskTable({ tasks, handleViewOutput }) {
 
   function colorFromStatus(status) {
     switch (status) {
@@ -15,13 +15,17 @@ function TaskTable({ tasks }) {
         return 'danger';
     }
   }
-  
+
+  const handleClick = useCallback((task) => {
+    console.log(task)
+    handleViewOutput(task)
+  }, [handleViewOutput]);
 
   return (
     <Table>
       <TableHead>
         <TableRow>
-        <TableCell>Status</TableCell>
+          <TableCell>Status</TableCell>
           <TableCell>Name</TableCell>
           <TableCell>Output</TableCell>
         </TableRow>
@@ -30,10 +34,12 @@ function TaskTable({ tasks }) {
         {tasks.map(task => (
           <TableRow key={task.id}>
             <TableCell>
-                <Chip label={task.status} color={colorFromStatus(task.status)} />
+              <Chip label={task.status} color={colorFromStatus(task.status)} />
             </TableCell>
             <TableCell>{task.name}</TableCell>
-            <TableCell>{task.output}</TableCell>
+            <TableCell>
+              <Button onClick={() => handleClick(task)}>View Output</Button>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

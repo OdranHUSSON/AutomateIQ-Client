@@ -11,6 +11,16 @@ const apiUrl = 'http://localhost:3000';
 const socket = io(apiUrl);
 
 function App() {
+  const [selectedEndpoint, setSelectedEndpoint] = useState('');
+  const [jobId, setJobId] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [done, setDone] = useState(false);
+  const [displayTask, setDisplayTask] = useState('');
+  const [endpointDetails, setEndpointDetails] = useState({
+    details: {},
+    url: '',
+  });
+
   const endpoints = [
     {
       name: 'Task Debug Endpoint',
@@ -43,14 +53,6 @@ function App() {
     },
   ];
 
-
-  const [endpointDetails, setEndpointDetails] = useState({
-    details: {},
-    url: '',
-  });
-
-  const [selectedEndpoint, setSelectedEndpoint] = useState('');
-
   const handleEndpointChange = (event) => {
     setSelectedEndpoint(event.target.value);
     const selectedEndpointObj = endpoints.find((endpoint) => endpoint.name === event.target.value);
@@ -59,10 +61,6 @@ function App() {
       url: selectedEndpointObj.url,
     });
   };
-
-  const [jobId, setJobId] = useState(null);
-  const [progress, setProgress] = useState(0);
-  const [done, setDone] = useState(false);
 
   const handleInputChange = (event) => {
 
@@ -115,6 +113,10 @@ function App() {
       addTask(updatedTask);
     } else {
       setTasks(updatedTasks);
+    }
+
+    if(updatedTask.status = 'done') {
+      setDisplayTask(updatedTask);
     }
   };
 
@@ -206,6 +208,11 @@ function App() {
       mode: 'dark',
     },
   });
+
+  function handleViewOutput(task) {
+    console.log(`handleviewoutput ${task.id}`)
+    setDisplayTask(task);
+  }
   
 
   return (
@@ -256,23 +263,23 @@ function App() {
               </div>
             )}
           </Box>
+        </Grid>
+        <Grid xs={8} p={2}>
           <Box mt={2} mb={2}>
             {CustomizedSnackbars('This is a success message', 'success', done)}
             {jobId && (
               <div>
                 <h2>Tasks</h2>
-                <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} />
+                <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} />
               </div>
             )}
           </Box>
-        </Grid>
-        <Grid xs={8} p={2}>
           <Box mt={2} mb={2}>
             <h2>Outputs</h2>
           </Box>
           <Box mt={2} mb={2}>
-            {jobId && (
-              <MarkdownViewer jobId={jobId} progress={progress} />
+            {displayTask && (
+              <MarkdownViewer task={displayTask}  />
             )}
           </Box>
         </Grid>
