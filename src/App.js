@@ -253,11 +253,12 @@ function App() {
                 {done && <p>Done!</p>}
               </div>
             )}
+            <h2>Tasks</h2>
+            <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} />
           </div>
         </Grid>
         <Grid xs={8}>
-          <h2>Tasks</h2>
-            <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} />
+            
           <h2>Outputs</h2>
           {jobId && (
             <MarkdownViewer jobId={jobId} progress={progress} />
