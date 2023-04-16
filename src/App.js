@@ -4,12 +4,12 @@ import axios from 'axios';
 import { TextField, Button, createTheme, ThemeProvider, Grid, CircularProgress, FormControl, Select, MenuItem } from '@mui/material';
 import MarkdownViewer from './MarkdownViewer';
 import DynamicForm from './DynamicForm';
+import TaskTable from './Tasks';
 
 const apiUrl = 'http://localhost:3000';
 const socket = io(apiUrl);
 
 function App() {
-
   const endpoints = [
     {
       name: 'Task Debug Endpoint',
@@ -97,6 +97,44 @@ function App() {
     setJobId(jobId);
   };
 
+  // TASKS 
+  const [tasks, setTasks] = useState([]);
+
+  const addTask = (task) => {
+    console.log(`ADDING TASK ${task.task_id}`);
+    const newTask = {
+      id: task.taskId,
+      status: task.status,
+      name: task.name,
+      output: task.output
+    };
+
+    setTasks([...tasks, newTask]);
+  };
+
+  const handleTaskUpdate = (updatedTask) => {
+    console.log("handle task udpate" + updatedTask.taskId)
+    console.log(updatedTask)
+    // Find the task with the given id and update its status and output
+    let createTask = true;
+    const updatedTasks = tasks.map(task => {
+      if (task.id === updatedTask.taskId) {
+        createTask = false;
+        return { ...task, status: updatedTask.status, output: updatedTask.output };
+      } else {
+        return task;
+      }
+    });
+
+    if(createTask) {
+      console.log("Create task")
+      addTask(updatedTask);
+    } else {
+      console.log("set task")
+      setTasks(updatedTasks);
+    }
+  };
+
   socket.on('connect', () => {
     console.log('Connected to server');
     socket.emit('message', 'Hello from client');
@@ -104,8 +142,6 @@ function App() {
 
   socket.on('Job:Update', (data) => {
     if (data.jobId === jobId) {
-      console.log(`Server says job ${data.jobId} has progressed to : ${data.progress}`);
-
       setProgress(data.progress);
       if (data.progress === 100) {
         setDone(true);
@@ -113,9 +149,16 @@ function App() {
     }
   });
 
+  socket.on('Task:Create', (data) => {
+    console.log(`${data.jobId}  jobId: ${jobId}`)
+    if (data.jobId === jobId) {
+      addTask(data);
+    }
+  });
+  
   socket.on('Task:Update', (data) => {
     if (data.jobId === jobId) {
-      console.log(`Server says task ${data.taskId} has change status to ${data.status}`);
+      handleTaskUpdate(data);
     }
   });
 
@@ -213,6 +256,8 @@ function App() {
           </div>
         </Grid>
         <Grid xs={8}>
+          <h2>Tasks</h2>
+            <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} />
           <h2>Outputs</h2>
           {jobId && (
             <MarkdownViewer jobId={jobId} progress={progress} />
