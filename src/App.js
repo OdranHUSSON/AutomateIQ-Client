@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import io from 'socket.io-client';
 import axios from 'axios';
 import { InputLabel, Button, createTheme, ThemeProvider, Grid, LinearProgress, FormControl, Select, MenuItem, ButtonGroup, Box } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import MarkdownViewer from './MarkdownViewer';
 import DynamicForm from './DynamicForm';
 import TaskTable from './Tasks';
@@ -83,6 +84,18 @@ function App() {
   // TASKS 
   const [tasks, setTasks] = useState([]);
 
+  const setAllTasks = (response) => {
+    const newTasks = response.Tasks.map((task) => ({
+      id: task.taskId,
+      status: task.status,
+      name: task.name,
+      output: task.output,
+    }));
+  
+    setTasks(newTasks);
+  };
+  
+
   const addTask = (task) => {
     const newTask = {
       id: task.taskId,
@@ -145,33 +158,25 @@ function App() {
     event.preventDefault();
     reset();
   }
-  socket.on('connect', () => {
-    console.log('Connected to server');
-    socket.emit('message', 'Hello from client');
-  });
 
-  socket.on('Job:Update', (data) => {
+  const handleJobUpdate = (data) => {
     if (data.jobId === jobId) {
       setProgress(data.progress);
       if (data.progress === 100) {
         setDone(true);
+        updateJobAndTasks();
       }
     }
-  });
-  
-  socket.on('Task:Update', (data) => {
-    if (data.jobId === jobId && data.status !== "pending") {
-      handleTaskUpdate(data);
-    }
-  });
+  };
 
-  socket.on('disconnect', () => {
-    console.log('Disconnected from server');
-  });
+  async function updateJobAndTasks() {
+    const response = await fetch(`${apiUrl}/jobs/${jobId}`);
+    const data = await response.json();
+    console.log(data)
+    setAllTasks(data)
+    return data;
+  }
 
-  socket.on('connect_error', (err) => {
-    console.log(`connect_error due to ${err.message}`);
-  });
 
   const startJob = async (details, temperature) => {
     try {
@@ -213,6 +218,30 @@ function App() {
   function handleViewOutput(task) {
     setDisplayTask(task);
   }
+
+  React.useEffect(() => {
+    socket.on('connect', () => {
+      console.log('Connected to server');
+      socket.emit('message', 'Hello from client');
+    });
+    socket.on('Job:Update', handleJobUpdate);
+    socket.on('Task:Update', (data) => {
+      if (data.jobId === jobId && data.status !== "pending") {
+        handleTaskUpdate(data);
+      }
+    });
+    socket.on('disconnect', () => {
+      console.log('Disconnected from server');
+    });
+    socket.on('connect_error', (err) => {
+      console.log(`connect_error due to ${err.message}`);
+    });
+    return () => {
+      // Remove event listeners
+      socket.off('Job:Update', handleJobUpdate);
+      socket.off('Task:Update', handleTaskUpdate);
+    };
+  }, [handleJobUpdate, handleTaskUpdate]);
   
 
   return (
@@ -247,9 +276,14 @@ function App() {
               <Box mt={2} mb={4}>
                 <DynamicForm endpointDetails={endpointDetails} handleInputChange={handleInputChange} />
               </Box>
-              <ButtonGroup fullWidth aria-label="outlined primary button group">
-                <Button variant="contained" type="submit">Generate</Button>
+              <ButtonGroup fullWidth aria-label="outlined primary button group">                
                 <Button type="reset" onClick={handleReset}>Reset</Button>
+                <Button variant="contained" type="submit">Generate</Button>
+                {jobId && (
+                  <Button type="button" onClick={updateJobAndTasks}>
+                    <RefreshIcon />
+                  </Button>
+                )}
               </ButtonGroup>
             </form>
           </Box>
