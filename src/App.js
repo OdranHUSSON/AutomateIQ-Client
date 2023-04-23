@@ -87,11 +87,11 @@ function App() {
   const setAllTasks = (response) => {
     const newTasks = response.Tasks.map((task) => ({
       id: task.taskId,
+      job_id: task.jobId,
       status: task.status,
       name: task.name,
       output: task.output,
     }));
-  
     setTasks(newTasks);
   };
   
@@ -99,6 +99,7 @@ function App() {
   const addTask = (task) => {
     const newTask = {
       id: task.taskId,
+      job_id: task.jobId,
       status: task.status,
       name: task.name,
       output: task.output
@@ -110,6 +111,7 @@ function App() {
   const addMultipleTasks = (tasks) => {
     const newTasks = tasks.map(task => ({
       id: task.taskId,
+      job_id: task.jobId,
       status: task.status,
       name: task.name,
       output: task.output
@@ -152,6 +154,7 @@ function App() {
 
     const jobId = await startJob(endpointDetails.details, 1);
     setJobId(jobId);
+    updateJobAndTasks();
   };
 
   const handleReset = async (event) => {
@@ -300,7 +303,7 @@ function App() {
             {tasks && tasks != [] && (
               <div>
                 <h2>Tasks</h2>
-                <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} />
+                <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} jobId={jobId} />
               </div>
             )}
           </Box>
