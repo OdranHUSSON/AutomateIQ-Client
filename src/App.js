@@ -44,12 +44,11 @@ function App() {
       }
     },
     {
-      name: 'Generate PRD',
-      url: '/api/generatePRD',
+      name: 'Chat GPT',
+      url: '/api/chatgpt',
       details: {
-        context: '',
-        actors: '',
-        initiative: ''
+        prompt: '',
+        temperature: '1',
       }
     },
   ];
