@@ -87,11 +87,11 @@ function App() {
   const setAllTasks = (response) => {
     const newTasks = response.Tasks.map((task) => ({
       id: task.taskId,
+      job_id: task.jobId,
       status: task.status,
       name: task.name,
       output: task.output,
     }));
-  
     setTasks(newTasks);
   };
   
@@ -99,6 +99,7 @@ function App() {
   const addTask = (task) => {
     const newTask = {
       id: task.taskId,
+      job_id: task.jobId,
       status: task.status,
       name: task.name,
       output: task.output
@@ -110,6 +111,7 @@ function App() {
   const addMultipleTasks = (tasks) => {
     const newTasks = tasks.map(task => ({
       id: task.taskId,
+      job_id: task.jobId,
       status: task.status,
       name: task.name,
       output: task.output
@@ -152,6 +154,7 @@ function App() {
 
     const jobId = await startJob(endpointDetails.details, 1);
     setJobId(jobId);
+    updateJobAndTasks();
   };
 
   const handleReset = async (event) => {
@@ -159,12 +162,12 @@ function App() {
     reset();
   }
 
-  const handleJobUpdate = (data) => {
+  const handleJobUpdate = async (data) => {
     if (data.jobId === jobId) {
       setProgress(data.progress);
       if (data.progress === 100) {
         setDone(true);
-        updateJobAndTasks();
+        await updateJobAndTasks();
       }
     }
   };
@@ -278,12 +281,10 @@ function App() {
               </Box>
               <ButtonGroup fullWidth aria-label="outlined primary button group">                
                 <Button type="reset" onClick={handleReset}>Reset</Button>
-                <Button variant="contained" type="submit">Generate</Button>
-                {jobId && (
-                  <Button type="button" onClick={updateJobAndTasks}>
+                <Button disabled={jobId ? true : false} variant="contained" type="submit">Generate</Button>
+                  <Button disabled={jobId ? false : true}  type="button" onClick={updateJobAndTasks}>
                     <RefreshIcon />
                   </Button>
-                )}
               </ButtonGroup>
             </form>
           </Box>
@@ -297,17 +298,17 @@ function App() {
               </div>
             )}
           </Box>
-        </Grid>
-        <Grid xs={8} p={2}>
           <Box mt={2} mb={2}>
             {CustomizedSnackbars('This is a success message', 'success', done)}
             {tasks && tasks != [] && (
               <div>
                 <h2>Tasks</h2>
-                <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} />
+                <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} jobId={jobId} />
               </div>
             )}
           </Box>
+        </Grid>
+        <Grid xs={8} p={2}>
           <Box mt={2} mb={2}>
             <h2>Outputs</h2>
           </Box>

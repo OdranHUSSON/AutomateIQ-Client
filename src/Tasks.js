@@ -1,7 +1,8 @@
 import React, { useCallback } from 'react';
 import { Table, TableHead, TableRow, TableCell, TableBody, Chip, Button } from '@mui/material';
+import axios from 'axios';
 
-function TaskTable({ tasks, handleViewOutput }) {
+function TaskTable({ tasks, handleViewOutput, jobId }) {
 
   function colorFromStatus(status) {
     switch (status) {
@@ -15,6 +16,22 @@ function TaskTable({ tasks, handleViewOutput }) {
         return 'danger';
     }
   }
+
+  const restartTask = async (taskId) => {
+    console.log(jobId, taskId)
+    try {
+      const response = await axios.get(`http://localhost:3000/job/${jobId}/restart/${taskId}`);
+      if (response.data.status === "ok") {
+        console.log("Task restarted successfully.");
+        // You can update your component state or do other necessary actions here.
+      } else {
+        console.error("Error occurred while restarting the task:", response.data.error);
+      }
+    } catch (error) {
+      console.error("Error occurred while making the API call:", error.message);
+    }
+  };
+  
 
   const handleClick = useCallback((task) => {
     console.log(task)
@@ -39,6 +56,7 @@ function TaskTable({ tasks, handleViewOutput }) {
             <TableCell>{task.name}</TableCell>
             <TableCell>
               <Button onClick={() => handleClick(task)}>View Output</Button>
+              <Button onClick={() => restartTask(task.id)}>Restart</Button>
             </TableCell>
           </TableRow>
         ))}
