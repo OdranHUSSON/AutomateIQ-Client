@@ -7,6 +7,7 @@ import MarkdownViewer from './MarkdownViewer';
 import DynamicForm from './DynamicForm';
 import TaskTable from './Tasks';
 import CustomizedSnackbars from './Snackbar';
+import AddTaskForm from './addTaskForm';
 
 const apiUrl = 'http://localhost:3000';
 const socket = io(apiUrl);
@@ -84,7 +85,8 @@ function App() {
   const [tasks, setTasks] = useState([]);
 
   const setAllTasks = (response) => {
-    const newTasks = response.Tasks.map((task) => ({
+    console.log(response)
+    const newTasks = response.tasks.map((task) => ({
       id: task.taskId,
       job_id: task.jobId,
       status: task.status,
@@ -96,6 +98,8 @@ function App() {
   
 
   const addTask = (task) => {
+    console.log('ici')
+    console.log(task)
     const newTask = {
       id: task.taskId,
       job_id: task.jobId,
@@ -172,11 +176,12 @@ function App() {
   };
 
   async function updateJobAndTasks() {
-    const response = await fetch(`${apiUrl}/jobs/${jobId}`);
-    const data = await response.json();
-    console.log(data)
-    setAllTasks(data)
-    return data;
+    if(jobId) {
+      const response = await fetch(`${apiUrl}/jobs/${jobId}`);
+      const data = await response.json();
+      setAllTasks(data.Job)
+      return data;
+    }
   }
 
 
@@ -227,6 +232,7 @@ function App() {
       socket.emit('message', 'Hello from client');
     });
     socket.on('Job:Update', handleJobUpdate);
+    
     socket.on('Task:Update', (data) => {
       if (data.jobId === jobId && data.status !== "pending") {
         handleTaskUpdate(data);
@@ -252,12 +258,12 @@ function App() {
       <Header />
       <div id="container">
       <Grid container spacing={2}>
-        <Grid xs={12} p={2}>
+        <Grid xs={12} p={2} item>
           <h1>AutomateIQ</h1>
         </Grid>
       </Grid>
       <Grid container spacing={2}>
-        <Grid xs={4} p={2}>
+        <Grid xs={4} p={2} item>
           <Box mt={2} mb={2}>
             <h2>Inputs</h2>
           </Box>
@@ -297,17 +303,19 @@ function App() {
               </div>
             )}
           </Box>
-          <Box mt={2} mb={2}>
-            {CustomizedSnackbars('This is a success message', 'success', done)}
-            {tasks && tasks != [] && (
-              <div>
-                <h2>Tasks</h2>
-                <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} jobId={jobId} />
-              </div>
-            )}
-          </Box>
+          {jobId && (
+            <Box mt={2} mb={2}>
+              {tasks && tasks != [] && (
+                <div>
+                  <h2>Tasks</h2>
+                  <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} jobId={jobId} />
+                  <AddTaskForm jobId={jobId} tasks={tasks} />
+                </div>
+              )}
+            </Box>
+          )}
         </Grid>
-        <Grid xs={8} p={2}>
+        <Grid xs={8} p={2} item>
           <Box mt={2} mb={2}>
             <h2>Outputs</h2>
           </Box>
