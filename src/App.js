@@ -1,90 +1,26 @@
 import React, { useState } from 'react';
 import io from 'socket.io-client';
-import axios from 'axios';
-import { InputLabel, Button, createTheme, ThemeProvider, Grid, LinearProgress, FormControl, Select, MenuItem, ButtonGroup, Box } from '@mui/material';
+import { Button, Grid, LinearProgress, Box, ButtonGroup } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import MarkdownViewer from './MarkdownViewer';
-import DynamicForm from './DynamicForm';
 import TaskTable from './Tasks';
-import CustomizedSnackbars from './Snackbar';
+import AddTaskForm from './addTaskForm';
 
 const apiUrl = 'http://localhost:3000';
 const socket = io(apiUrl);
 
-function App() {
-  const [selectedEndpoint, setSelectedEndpoint] = useState('');
-  const [jobId, setJobId] = useState(null);
+function App({ jobId: initialJobId }) {
+  const [jobId, setJobId] = useState(initialJobId);
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
   const [displayTask, setDisplayTask] = useState('');
-  const [endpointDetails, setEndpointDetails] = useState({
-    details: {},
-    url: '',
-  });
-
-  const endpoints = [
-    {
-      name: 'Task Debug Endpoint',
-      url: '/api/taskTest',
-      details: {
-        context: '',
-        actors: '',
-        initiative: '',
-        requirements: ''
-      }
-    },
-    {
-      name: 'Generate Card',
-      url: '/api/generateCard',
-      details: {
-        context: '',
-        actors: '',
-        featureName: '',
-        featureDescription: ''
-      }
-    },
-    {
-      name: 'Chat GPT',
-      url: '/api/chatgpt',
-      details: {
-        prompt: '',
-        temperature: '1',
-      }
-    },
-  ];
-
-  const handleEndpointChange = (event) => {
-    setSelectedEndpoint(event.target.value);
-    const selectedEndpointObj = endpoints.find((endpoint) => endpoint.name === event.target.value);
-    setEndpointDetails({
-      details: selectedEndpointObj.details,
-      url: selectedEndpointObj.url,
-    });
-  };
-
-  const handleInputChange = (event) => {
-
-    const { name, value } = event.target;
-
-    const updatedDetails = {
-      ...endpointDetails.details,
-      [name]: value
-    };
-  
-    // Merge the updated object with the original endpointDetails object
-    const updatedEndpointDetails = {
-      ...endpointDetails,
-      details: updatedDetails
-    };
-
-    setEndpointDetails((prevState) => (updatedEndpointDetails));
-  };
 
   // TASKS 
   const [tasks, setTasks] = useState([]);
 
   const setAllTasks = (response) => {
-    const newTasks = response.Tasks.map((task) => ({
+    console.log(response)
+    const newTasks = response.tasks.map((task) => ({
       id: task.taskId,
       job_id: task.jobId,
       status: task.status,
@@ -96,6 +32,8 @@ function App() {
   
 
   const addTask = (task) => {
+    console.log('ici')
+    console.log(task)
     const newTask = {
       id: task.taskId,
       job_id: task.jobId,
@@ -143,79 +81,41 @@ function App() {
     setProgress(0);
     setTasks([]);
     setDone(false);
-    setJobId(null);
     setDisplayTask('');
   }
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    reset();
-
-    const jobId = await startJob(endpointDetails.details, 1);
-    setJobId(jobId);
-    updateJobAndTasks();
-  };
 
   const handleReset = async (event) => {
     event.preventDefault();
     reset();
   }
 
-  const handleJobUpdate = async (data) => {
+  const handleJobUpdate = async (data, ws = true) => {
     if (data.jobId === jobId) {
       setProgress(data.progress);
       if (data.progress === 100) {
         setDone(true);
-        await updateJobAndTasks();
+        if(ws) {
+          await updateJobAndTasks();
+        }
       }
     }
   };
 
   async function updateJobAndTasks() {
-    const response = await fetch(`${apiUrl}/jobs/${jobId}`);
-    const data = await response.json();
-    console.log(data)
-    setAllTasks(data)
-    return data;
-  }
-
-
-  const startJob = async (details, temperature) => {
-    try {
-      const response = await axios.post(apiUrl + endpointDetails.url, {
-        details: details,
-        temperature: temperature,
-      });
-      console.log(response.data);
-      addMultipleTasks(response.data.tasks)
-      return response.data.jobId;
-    } catch (error) {
-      console.log(error);
-      throw new Error(error.response.data.error);
+    if(jobId) {
+      const response = await fetch(`${apiUrl}/jobs/${jobId}`);
+      let data = await response.json();
+      data.Job.jobId = data.Job.job_id;
+      console.log(data.Job)
+      setAllTasks(data.Job)
+      handleJobUpdate(data.Job, false)
+      return data;
     }
-  };
-  
-  
-  function Header() {
-    const [ darkMode, setDarkMode ] = React.useState(true)
-     
-    React.useEffect(() => {
-      const body = document.body
-      const toggle = document.querySelector('.toggle-inner')
-      
-      if( darkMode === true ) {
-        body.classList.add('dark-mode')
-      } else {
-        body.classList.remove('dark-mode')
-      }
-    }, [darkMode])
   }
 
-  const darkTheme = createTheme({
-    palette: {
-      mode: 'dark',
-    },
-  });
+  React.useEffect(() => {
+    updateJobAndTasks();
+  }, [jobId]);
 
   function handleViewOutput(task) {
     setDisplayTask(task);
@@ -227,6 +127,7 @@ function App() {
       socket.emit('message', 'Hello from client');
     });
     socket.on('Job:Update', handleJobUpdate);
+    
     socket.on('Task:Update', (data) => {
       if (data.jobId === jobId && data.status !== "pending") {
         handleTaskUpdate(data);
@@ -247,80 +148,56 @@ function App() {
   
 
   return (
-    <ThemeProvider theme={darkTheme}>
-    <main>
-      <Header />
-      <div id="container">
-      <Grid container spacing={2}>
-        <Grid xs={12} p={2}>
-          <h1>AutomateIQ</h1>
-        </Grid>
-      </Grid>
-      <Grid container spacing={2}>
-        <Grid xs={4} p={2}>
-          <Box mt={2} mb={2}>
-            <h2>Inputs</h2>
-          </Box>
-          <Box mt={2} mb={2}>
-            <FormControl fullWidth>
-            <InputLabel id='endpoint'>Select a endpoint</InputLabel>
-            <Select labelId='endpoint' label="Select a endpoint" value={selectedEndpoint} onChange={handleEndpointChange}>
-              {endpoints.map(endpoint => (
-                <MenuItem key={endpoint.name} value={endpoint.name}>
-                  {endpoint.name}
-                </MenuItem>
-              ))}
-            </Select>
-            </FormControl>
-          </Box>
-          <Box mt={2} mb={2}>
-            <form onSubmit={handleSubmit}>
-              <Box mt={2} mb={4}>
-                <DynamicForm endpointDetails={endpointDetails} handleInputChange={handleInputChange} />
-              </Box>
-              <ButtonGroup fullWidth aria-label="outlined primary button group">                
-                <Button type="reset" onClick={handleReset}>Reset</Button>
-                <Button disabled={jobId ? true : false} variant="contained" type="submit">Generate</Button>
-                  <Button disabled={jobId ? false : true}  type="button" onClick={updateJobAndTasks}>
-                    <RefreshIcon />
-                  </Button>
-              </ButtonGroup>
-            </form>
-          </Box>
-          <Box mt={2} mb={2}>
+        <Grid container spacing={2}>
+          <Grid xs={4} p={2} item>
+            <Box mt={2} mb={2} p={2}>
+              <h2>Inputs</h2>
+            </Box>
+
+            <Box mt={2} mb={2}>
+              <form>
+                <ButtonGroup fullWidth aria-label="outlined primary button group">                
+                  <Button type="reset" onClick={handleReset}>Reset</Button>
+                  <Button disabled={jobId ? true : false} variant="contained" type="submit">Generate</Button>
+                    <Button disabled={jobId ? false : true}  type="button" onClick={updateJobAndTasks}>
+                      <RefreshIcon />
+                    </Button>
+                </ButtonGroup>
+              </form>
+            </Box>
+            <Box mt={2} mb={2}>
+              {jobId && (
+                <div>
+                  <h2>Job</h2>
+                  <p>Generating with jobId: {jobId}</p>
+                  { progress == 0 && <LinearProgress />} 
+                  {( progress > 0 ) && <LinearProgress variant="determinate" value={progress} />}
+                </div>
+              )}
+            </Box>
             {jobId && (
-              <div>
-                <h2>Job</h2>
-                <p>Generating with jobId: {jobId}</p>
-                { progress == 0 && <LinearProgress />} 
-                {( progress > 0 ) && <LinearProgress variant="determinate" value={progress} />}
-              </div>
+              <Box mt={2} mb={2}>
+                {tasks && tasks != [] && (
+                  <div>
+                    <h2>Tasks</h2>
+                    <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} jobId={jobId} />
+                    <AddTaskForm jobId={jobId} tasks={tasks} />
+                  </div>
+                )}
+              </Box>
             )}
-          </Box>
-          <Box mt={2} mb={2}>
-            {CustomizedSnackbars('This is a success message', 'success', done)}
-            {tasks && tasks != [] && (
-              <div>
-                <h2>Tasks</h2>
-                <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} jobId={jobId} />
-              </div>
-            )}
-          </Box>
+          </Grid>
+          <Grid xs={8} p={2} item>
+            <Box mt={2} mb={2}>
+              <h2>Outputs</h2>
+            </Box>
+            <Box mt={2} mb={2}>
+              {displayTask && (
+                <MarkdownViewer task={displayTask}  />
+              )}
+            </Box>
+          </Grid>
         </Grid>
-        <Grid xs={8} p={2}>
-          <Box mt={2} mb={2}>
-            <h2>Outputs</h2>
-          </Box>
-          <Box mt={2} mb={2}>
-            {displayTask && (
-              <MarkdownViewer task={displayTask}  />
-            )}
-          </Box>
-        </Grid>
-      </Grid>  
-      </div>
-    </main>
-    </ThemeProvider>
   );
 }
 
