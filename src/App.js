@@ -133,6 +133,12 @@ function App({ jobId: initialJobId }) {
         handleTaskUpdate(data);
       }
     });
+
+    socket.on('Task:Create', (data) => {
+      if (data.jobId === jobId ) {
+        addTask(data);
+      }
+    });
     socket.on('disconnect', () => {
       console.log('Disconnected from server');
     });
@@ -146,6 +152,22 @@ function App({ jobId: initialJobId }) {
     };
   }, [handleJobUpdate, handleTaskUpdate]);
   
+  async function restartJob() {
+    try {
+      const response = await fetch(`${apiUrl}/job/restart/${jobId}`);
+      const data = await response.json();
+      console.log(response)
+  
+      if (response.ok) {
+        console.log('Job restarted successfully:', data);
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error('Error restarting the job:', error);
+    }
+  }
+  
 
   return (
         <Grid container spacing={2}>
@@ -158,7 +180,7 @@ function App({ jobId: initialJobId }) {
               <form>
                 <ButtonGroup fullWidth aria-label="outlined primary button group">                
                   <Button type="reset" onClick={handleReset}>Reset</Button>
-                  <Button disabled={jobId ? true : false} variant="contained" type="submit">Generate</Button>
+                  <Button variant="contained" onClick={restartJob}>Restart</Button>
                     <Button disabled={jobId ? false : true}  type="button" onClick={updateJobAndTasks}>
                       <RefreshIcon />
                     </Button>
