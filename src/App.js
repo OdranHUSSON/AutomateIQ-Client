@@ -109,6 +109,9 @@ function App({ jobId: initialJobId }) {
       console.log(data.Job)
       setAllTasks(data.Job)
       handleJobUpdate(data.Job, false)
+      setProgress(data.Job.progress)
+      const done = data.Job.progress == 100;
+      setDone(done)
       return data;
     }
   }
@@ -129,8 +132,15 @@ function App({ jobId: initialJobId }) {
     socket.on('Job:Update', handleJobUpdate);
     
     socket.on('Task:Update', (data) => {
-      if (data.jobId === jobId && data.status !== "pending") {
+      console.log(data)
+      if (data.jobId === jobId ) {
         handleTaskUpdate(data);
+      }
+    });
+
+    socket.on('Task:Create', (data) => {
+      if (data.jobId === jobId ) {
+        addTask(data);
       }
     });
     socket.on('disconnect', () => {
@@ -146,6 +156,23 @@ function App({ jobId: initialJobId }) {
     };
   }, [handleJobUpdate, handleTaskUpdate]);
   
+  async function restartJob() {
+    try {
+      const response = await fetch(`${apiUrl}/job/restart/${jobId}`);
+      const data = await response.json();
+      console.log(response)
+  
+      if (response.ok) {
+        console.log('Job restarted successfully:', data);
+        updateJobAndTasks();
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error('Error restarting the job:', error);
+    }
+  }
+  
 
   return (
         <Grid container spacing={2}>
@@ -158,7 +185,7 @@ function App({ jobId: initialJobId }) {
               <form>
                 <ButtonGroup fullWidth aria-label="outlined primary button group">                
                   <Button type="reset" onClick={handleReset}>Reset</Button>
-                  <Button disabled={jobId ? true : false} variant="contained" type="submit">Generate</Button>
+                  <Button variant="contained" onClick={restartJob}>Restart</Button>
                     <Button disabled={jobId ? false : true}  type="button" onClick={updateJobAndTasks}>
                       <RefreshIcon />
                     </Button>
