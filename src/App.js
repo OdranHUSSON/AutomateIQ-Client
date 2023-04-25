@@ -109,6 +109,9 @@ function App({ jobId: initialJobId }) {
       console.log(data.Job)
       setAllTasks(data.Job)
       handleJobUpdate(data.Job, false)
+      setProgress(data.Job.progress)
+      const done = data.Job.progress == 100;
+      setDone(done)
       return data;
     }
   }
@@ -129,7 +132,8 @@ function App({ jobId: initialJobId }) {
     socket.on('Job:Update', handleJobUpdate);
     
     socket.on('Task:Update', (data) => {
-      if (data.jobId === jobId && data.status !== "pending") {
+      console.log(data)
+      if (data.jobId === jobId ) {
         handleTaskUpdate(data);
       }
     });
@@ -160,6 +164,7 @@ function App({ jobId: initialJobId }) {
   
       if (response.ok) {
         console.log('Job restarted successfully:', data);
+        updateJobAndTasks();
       } else {
         throw new Error(data.error);
       }
