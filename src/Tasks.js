@@ -1,5 +1,15 @@
 import React, { useCallback } from 'react';
-import { Table, TableHead, TableRow, TableCell, TableBody, Chip, Button } from '@mui/material';
+import {
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Chip,
+  Button,
+  CircularProgress,
+  LinearProgress
+} from '@mui/material';
 import axios from 'axios';
 
 function TaskTable({ tasks, handleViewOutput, jobId }) {
@@ -45,6 +55,7 @@ function TaskTable({ tasks, handleViewOutput, jobId }) {
           <TableCell>Status</TableCell>
           <TableCell>Name</TableCell>
           <TableCell>Output</TableCell>
+          <TableCell>Progress</TableCell>
         </TableRow>
       </TableHead>
       <TableBody>
@@ -57,6 +68,11 @@ function TaskTable({ tasks, handleViewOutput, jobId }) {
             <TableCell>
               <Button onClick={() => handleClick(task)}>View Output</Button>
               <Button onClick={() => restartTask(task.id)}>Restart</Button>
+            </TableCell>
+            <TableCell>
+              {task.status === 'in progress' && (
+                  <CircularProgress />
+              )}
             </TableCell>
           </TableRow>
         ))}

@@ -90,7 +90,7 @@ const AddTaskForm = ({ jobId, tasks }) => {
         >
           {Object.keys(allowedCommands).map((task) => (
             <MenuItem key={task} value={task}>
-              {task}
+              {allowedCommands[task]['label'] || task}
             </MenuItem>
           ))}
         </Select>
