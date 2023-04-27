@@ -14,7 +14,8 @@ import axios from 'axios';
 
 function TaskTable({ tasks, handleViewOutput, jobId }) {
 
-  function colorFromStatus(status) {
+  function colorFromStatus(status = "unknown") {
+    console.log("color from status " + status)
     switch (status) {
       case 'done':
         return 'success';
@@ -22,8 +23,10 @@ function TaskTable({ tasks, handleViewOutput, jobId }) {
         return 'primary';
       case 'pending':
         return 'primary';
+      case 'error':
+        return 'error';
       default:
-        return 'danger';
+        return 'error';
     }
   }
 
@@ -62,7 +65,7 @@ function TaskTable({ tasks, handleViewOutput, jobId }) {
         {tasks.map(task => (
           <TableRow key={task.id}>
             <TableCell>
-              <Chip label={task.status} color={colorFromStatus(task.status)} />
+              <Chip label={task.status ?? "unknown"} color={colorFromStatus(task.status)} />
             </TableCell>
             <TableCell>{task.name}</TableCell>
             <TableCell>
