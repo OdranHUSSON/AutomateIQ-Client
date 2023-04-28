@@ -1,25 +1,24 @@
 import React, { useState } from 'react';
 import io from 'socket.io-client';
-import { Button, Grid, LinearProgress, Box, ButtonGroup } from '@mui/material';
+import { Button, Grid, LinearProgress, Box, ButtonGroup, Paper, Card, CardContent, CardHeader, Avatar, Typography } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import MarkdownViewer from './MarkdownViewer';
 import TaskTable from './Tasks';
 import AddTaskForm from './addTaskForm';
+import socket from './socket';
+import { apiUrl } from './api/config';
 
-const apiUrl = 'http://localhost:3000';
-const socket = io(apiUrl);
-
-function App({ jobId: initialJobId }) {
-  const [jobId, setJobId] = useState(initialJobId);
+function App({ jobId }) {
+  const [job, setJob] = useState({});
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
   const [displayTask, setDisplayTask] = useState('');
+  const [isRestarting, setIsRestarting] = useState(false);
 
   // TASKS 
   const [tasks, setTasks] = useState([]);
 
   const setAllTasks = (response) => {
-    console.log(response)
     const newTasks = response.tasks.map((task) => ({
       id: task.taskId,
       job_id: task.jobId,
@@ -62,20 +61,21 @@ function App({ jobId: initialJobId }) {
 
   const handleTaskUpdate = (updatedTask) => {
     // Find the task with the given id and update its status and output
-    const updatedTasks = tasks.map(task => {
-      if (task.id === updatedTask.taskId) {
-        return { ...task, status: updatedTask.status, output: updatedTask.output };
-      } else {
-        return task;
-      }
+    setTasks(tasks => {
+      return tasks.map(task => {
+        if (task.id === updatedTask.taskId) {
+          return { ...task, status: updatedTask.status, output: updatedTask.output };
+        } else {
+          return task;
+        }
+      });
     });
-
-    setTasks(updatedTasks);
-
-    if(updatedTask.status = 'done') {
+  
+    if(updatedTask.status === 'done') {
       setDisplayTask(updatedTask);
     }
   };
+  
 
   function reset() {
     setProgress(0);
@@ -90,13 +90,11 @@ function App({ jobId: initialJobId }) {
   }
 
   const handleJobUpdate = async (data, ws = true) => {
-    if (data.jobId === jobId) {
+    if (data.jobId == job.jobId) {
       setProgress(data.progress);
-      if (data.progress === 100) {
+      if (data.progress == 100) {
         setDone(true);
-        if(ws) {
-          await updateJobAndTasks();
-        }
+        if(ws) updateJobAndTasks();
       }
     }
   };
@@ -105,63 +103,81 @@ function App({ jobId: initialJobId }) {
     if(jobId) {
       const response = await fetch(`${apiUrl}/jobs/${jobId}`);
       let data = await response.json();
+      console.log(data)
       data.Job.jobId = data.Job.job_id;
-      console.log(data.Job)
+      setJob(data.Job);
       setAllTasks(data.Job)
-      handleJobUpdate(data.Job, false)
+      handleJobUpdate(data.Job.jobId, false)
       setProgress(data.Job.progress)
-      const done = data.Job.progress == 100;
-      setDone(done)
       return data;
     }
   }
 
-  React.useEffect(() => {
-    updateJobAndTasks();
-  }, [jobId]);
 
   function handleViewOutput(task) {
     setDisplayTask(task);
   }
 
   React.useEffect(() => {
+    updateJobAndTasks();
+  }, [jobId]);
+
+  React.useEffect(() => {
     socket.on('connect', () => {
       console.log('Connected to server');
       socket.emit('message', 'Hello from client');
     });
-    socket.on('Job:Update', handleJobUpdate);
-    
+
+    socket.on('Job:Update', (data) => {
+      console.log(`JOB UPDATE CALLED ${data.jobId}`);
+      console.log(data)
+      if (data.jobId === jobId ) {
+        handleJobUpdate(data, true);
+      }
+    });
+  
     socket.on('Task:Update', (data) => {
+      console.log(`TASK UPDATE CALLED ${data.taskId}`);
       console.log(data)
       if (data.jobId === jobId ) {
         handleTaskUpdate(data);
       }
     });
-
+  
     socket.on('Task:Create', (data) => {
       if (data.jobId === jobId ) {
         addTask(data);
       }
     });
+  
     socket.on('disconnect', () => {
       console.log('Disconnected from server');
     });
+  
     socket.on('connect_error', (err) => {
       console.log(`connect_error due to ${err.message}`);
     });
+  
+    // Remove event listeners when component unmounts
     return () => {
-      // Remove event listeners
+      socket.off('connect');
       socket.off('Job:Update', handleJobUpdate);
       socket.off('Task:Update', handleTaskUpdate);
+      socket.off('Task:Create', addTask);
+      socket.off('disconnect');
+      socket.off('connect_error');
     };
-  }, [handleJobUpdate, handleTaskUpdate]);
+  }, [socket]);
+  
   
   async function restartJob() {
     try {
+      setIsRestarting(true);
+      setTasks(tasks => tasks.map(task => ({...task, status: 'pending'})));
       const response = await fetch(`${apiUrl}/job/restart/${jobId}`);
       const data = await response.json();
       console.log(response)
-  
+
       if (response.ok) {
         console.log('Job restarted successfully:', data);
         updateJobAndTasks();
@@ -170,62 +186,77 @@ function App({ jobId: initialJobId }) {
       }
     } catch (error) {
       console.error('Error restarting the job:', error);
+    } finally {
+      setIsRestarting(false);
     }
   }
   
+  
 
   return (
-        <Grid container spacing={2}>
-          <Grid xs={4} p={2} item>
-            <Box mt={2} mb={2} p={2}>
-              <h2>Inputs</h2>
-            </Box>
-
-            <Box mt={2} mb={2}>
-              <form>
-                <ButtonGroup fullWidth aria-label="outlined primary button group">                
-                  <Button type="reset" onClick={handleReset}>Reset</Button>
-                  <Button variant="contained" onClick={restartJob}>Restart</Button>
-                    <Button disabled={jobId ? false : true}  type="button" onClick={updateJobAndTasks}>
-                      <RefreshIcon />
-                    </Button>
-                </ButtonGroup>
-              </form>
-            </Box>
-            <Box mt={2} mb={2}>
-              {jobId && (
-                <div>
-                  <h2>Job</h2>
-                  <p>Generating with jobId: {jobId}</p>
-                  { progress == 0 && <LinearProgress />} 
-                  {( progress > 0 ) && <LinearProgress variant="determinate" value={progress} />}
-                </div>
-              )}
-            </Box>
-            {jobId && (
-              <Box mt={2} mb={2}>
-                {tasks && tasks != [] && (
+    <Grid container spacing={2}>
+      <Grid item xs={4}>
+        <Paper sx={{ p: 2, borderRadius: 4 }}>
+          <Card>
+            {job.name && (
+              <CardHeader
+                title={job.name}
+                avatar={<Avatar>{job.name[0]}</Avatar>}
+              />
+            )}
+            <CardContent>
+              <Typography>{job.description}</Typography>
+              <Typography>jobId: {jobId}</Typography>
+              {jobId && tasks && tasks.length > 0 && (
+                <Box mt={2} mb={2}>
                   <div>
-                    <h2>Tasks</h2>
+                    <Typography variant='h5'>Tasks</Typography>
                     <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} jobId={jobId} />
-                    <AddTaskForm jobId={jobId} tasks={tasks} />
+                  </div>
+                </Box>
+              )}
+              <Box mb={2}>
+                {jobId && job.name && (
+                  <div>
+                    {progress === 0 && <LinearProgress />} 
+                    {progress > 0 && <LinearProgress variant="determinate" value={progress} />}
+                    <form>
+                      <ButtonGroup fullWidth aria-label="outlined primary button group">                
+                        <Button type="reset" onClick={handleReset}>Reset</Button>
+                        <Button
+                          variant="contained"
+                          onClick={restartJob}
+                          disabled={isRestarting || !jobId}
+                         >
+                          Restart
+                        </Button>
+                        <Button disabled={!jobId} type="button" onClick={updateJobAndTasks}>
+                          <RefreshIcon />
+                        </Button>
+                      </ButtonGroup>
+                    </form>
                   </div>
                 )}
               </Box>
-            )}
-          </Grid>
-          <Grid xs={8} p={2} item>
-            <Box mt={2} mb={2}>
-              <h2>Outputs</h2>
-            </Box>
-            <Box mt={2} mb={2}>
-              {displayTask && (
-                <MarkdownViewer task={displayTask}  />
-              )}
-            </Box>
-          </Grid>
-        </Grid>
+              <Typography variant='h5'>Add a task</Typography>
+              <AddTaskForm jobId={jobId} tasks={tasks} />
+            </CardContent>
+          </Card>
+        </Paper>
+      </Grid>
+      <Grid item xs={8}>
+        <Paper sx={{ p: 2, borderRadius: 4 }}>
+          <Box mt={2} mb={2}>
+            <h2>Outputs</h2>
+          </Box>
+          <Box mt={2} mb={2} borderRadius={4}>
+            {displayTask && <MarkdownViewer task={displayTask} />}
+          </Box>
+        </Paper>
+      </Grid>
+    </Grid>
   );
+  
 }
 
 export default App;
