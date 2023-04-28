@@ -173,13 +173,13 @@ function App({ jobId }) {
   async function restartJob() {
     try {
       setIsRestarting(true);
-      setTasks(tasks => tasks.map(task => ({...task, status: 'pending'})));
       const response = await fetch(`${apiUrl}/job/restart/${jobId}`);
       const data = await response.json();
       console.log(response)
 
       if (response.ok) {
         console.log('Job restarted successfully:', data);
+        setTasks(tasks => tasks.map(task => ({...task, status: 'pending'})));
         updateJobAndTasks();
       } else {
         throw new Error(data.error);

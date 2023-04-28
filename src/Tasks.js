@@ -71,7 +71,7 @@ function TaskTable({ tasks, handleViewOutput, jobId }) {
               <CircularProgress size={20}/>
             ) : (
               <div>
-                {task.status === 'done' || task.status === 'error' ? (
+                {task.status === 'done' || task.status === 'error' || task.status === 'pending' ? (
                   <div>
                     <Button onClick={() => handleClick(task)}>View Output</Button>
                     <Button onClick={() => restartTask(task.id)}>Restart</Button>
