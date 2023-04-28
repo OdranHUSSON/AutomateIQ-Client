@@ -15,7 +15,6 @@ import axios from 'axios';
 function TaskTable({ tasks, handleViewOutput, jobId }) {
 
   function colorFromStatus(status = "unknown") {
-    console.log("color from status " + status)
     switch (status) {
       case 'done':
         return 'success';
@@ -58,24 +57,28 @@ function TaskTable({ tasks, handleViewOutput, jobId }) {
           <TableCell>Status</TableCell>
           <TableCell>Name</TableCell>
           <TableCell>Output</TableCell>
-          <TableCell>Progress</TableCell>
         </TableRow>
       </TableHead>
       <TableBody>
         {tasks.map(task => (
           <TableRow key={task.id}>
             <TableCell>
-              <Chip label={task.status ?? "unknown"} color={colorFromStatus(task.status)} />
+              <Chip label={task.status ?? 'unknown'} color={colorFromStatus(task.status)} />
             </TableCell>
             <TableCell>{task.name}</TableCell>
             <TableCell>
-              <Button onClick={() => handleClick(task)}>View Output</Button>
-              <Button onClick={() => restartTask(task.id)}>Restart</Button>
-            </TableCell>
-            <TableCell>
-              {task.status === 'in progress' && (
-                  <CircularProgress />
-              )}
+            {task.status === 'in progress' ? (
+              <CircularProgress size={20}/>
+            ) : (
+              <div>
+                {task.status === 'done' || task.status === 'error' ? (
+                  <div>
+                    <Button onClick={() => handleClick(task)}>View Output</Button>
+                    <Button onClick={() => restartTask(task.id)}>Restart</Button>
+                  </div>
+                ) : null}
+              </div>
+            )}
             </TableCell>
           </TableRow>
         ))}
