@@ -29,6 +29,34 @@ function ListJobs() {
     setJobs((jobs) => [...jobs, data]);
   }
   
+  function handleJobDelete(jobId) {
+    const updatedJobs = jobs.filter(job => job.job_id !== jobId);
+    setJobs(updatedJobs);
+  }
+
+  async function deleteJob(jobId) {
+    try {
+      const response = await fetch(`${apiUrl}/job/delete/${jobId}`, {
+        method: 'GET'
+      });
+      const data = await response.json();
+
+      if (data.status === 'ok') {
+        handleJobDelete(jobId);
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error('Error deleting job:', error);
+    }
+  }
+
+  function handleDeleteJob(jobId) {
+    if (window.confirm('Are you sure you want to delete this job?')) {
+      deleteJob(jobId);
+    }
+  }
+  
 
   React.useEffect(() => {
     socket.on('connect', () => {
@@ -137,6 +165,9 @@ function ListJobs() {
                 <CardContent>
                   <Button component={Link} to={`/job/${job.job_id}`} variant="contained" color="primary">
                     View Job
+                  </Button>
+                  <Button onClick={() => handleDeleteJob(job.job_id)} variant="contained" color="secondary" style={{marginLeft: '10px'}}>
+                    Delete Job
                   </Button>
                 </CardContent>
               </Card>
