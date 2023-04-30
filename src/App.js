@@ -31,8 +31,6 @@ function App({ jobId }) {
   
 
   const addTask = (task) => {
-    console.log('ici')
-    console.log(task)
     const newTask = {
       id: task.taskId,
       job_id: task.jobId,
@@ -75,7 +73,10 @@ function App({ jobId }) {
       setDisplayTask(updatedTask);
     }
   };
-  
+
+  const deleteTask = (taskId) => {
+    setTasks(tasks.filter(task => task.id !== taskId));
+  };
 
   function reset() {
     setProgress(0);
@@ -134,6 +135,12 @@ function App({ jobId }) {
       if (data.jobId === jobId ) {
         handleJobUpdate(data, true);
       }
+    });
+
+    socket.on('Task:Delete', (data) => {
+      console.log(`TASL DELETE CALLED ${data.taskId}`);
+      console.log(data)
+      deleteTask(data.taskId);
     });
   
     socket.on('Task:Update', (data) => {

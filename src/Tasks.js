@@ -44,6 +44,20 @@ function TaskTable({ tasks, handleViewOutput, jobId }) {
     }
   };
   
+  const deleteTask = async (taskId) => {
+    console.log(jobId, taskId)
+    try {
+      const response = await axios.delete(`http://localhost:3000/job/${jobId}/task/${taskId}`);
+      if (response.data.status === "ok") {
+        console.log("Task deleted successfully.");
+        // You can update your component state or do other necessary actions here.
+      } else {
+        console.error("Error occurred while deleting the task:", response.data.error);
+      }
+    } catch (error) {
+      console.error("Error occurred while making the API call:", error.message);
+    }
+  };
 
   const handleClick = useCallback((task) => {
     console.log(task)
@@ -75,6 +89,7 @@ function TaskTable({ tasks, handleViewOutput, jobId }) {
                   <div>
                     <Button onClick={() => handleClick(task)}>View Output</Button>
                     <Button onClick={() => restartTask(task.id)}>Restart</Button>
+                    <Button onClick={() => deleteTask(task.id)}>Delete</Button>
                   </div>
                 ) : null}
               </div>
