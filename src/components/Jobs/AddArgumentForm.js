@@ -36,21 +36,25 @@ const AddArgumentForm = ({ jobId }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <TextField
-        label="Argument Name"
-        value={name}
-        onChange={handleNameChange}
-        fullWidth
-        mt={2}
-      />
-      <TextField
-        label="Argument Value"
-        value={value}
-        onChange={handleValueChange}
-        fullWidth
-        mt={2}
-      />
-      <FormControl fullWidth mt={2}>
+    <FormControl fullWidth margin='dense'>
+        <TextField
+            label="Argument Name"
+            value={name}
+            onChange={handleNameChange}
+            fullWidth
+            mt={2}
+        />
+      </FormControl>
+      <FormControl fullWidth margin='dense'>
+        <TextField
+            label="Argument Value"
+            value={value}
+            onChange={handleValueChange}
+            fullWidth
+            mt={2}
+        />
+      </FormControl>
+      <FormControl fullWidth margin='dense'>
         <InputLabel>Argument Type</InputLabel>
         <Select
           value={type}
