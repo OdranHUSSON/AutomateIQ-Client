@@ -12,6 +12,7 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Typography,
 } from '@mui/material';
 import { MoreVert as MoreVertIcon } from '@mui/icons-material';
 import axios from 'axios';
@@ -86,7 +87,7 @@ function TaskTable({ tasks, handleViewOutput, jobId }) {
         <TableRow>
           <TableCell>Status</TableCell>
           <TableCell>Name</TableCell>
-          <TableCell>Output</TableCell>
+          <TableCell>Action</TableCell>
         </TableRow>
       </TableHead>
       <TableBody>

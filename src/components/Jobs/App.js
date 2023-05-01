@@ -88,7 +88,7 @@ function App({ jobId }) {
 
   const handleReset = async (event) => {
     event.preventDefault();
-    reset();
+    alert('not implementend yet')
   }
 
   const handleJobUpdate = async (data, ws = true) => {
@@ -216,17 +216,10 @@ function App({ jobId }) {
             )}
             <CardContent>
               <Box mb={2}>
-              <Typography variant='h5'>Description</Typography>
                 <Typography variant='p'>{job.description}</Typography>
               </Box>
               <Box mt={2} mb={2}>
                 <JobId jobId={jobId} />
-              </Box>
-              <Box mt={2} mb={2}>
-                <Typography variant='h5'>Tasks</Typography>
-                {jobId && tasks && tasks.length > 0 && (
-                  <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} jobId={jobId} />                
-                )}
               </Box>
               <Box mb={2}>
                 {jobId && job.name && (
@@ -241,9 +234,9 @@ function App({ jobId }) {
                           onClick={restartJob}
                           disabled={isRestarting || !jobId}
                          >
-                          Restart
+                          Start
                         </Button>
-                        <Button disabled={!jobId} type="button" onClick={updateJobAndTasks}>
+                        <Button disabled={!jobId} type="button" onClick={updateJobAndTasks} title={"force update"}>
                           <RefreshIcon />
                         </Button>
                       </ButtonGroup>
@@ -251,6 +244,22 @@ function App({ jobId }) {
                   </div>
                 )}
               </Box>
+            </CardContent>
+          </Card>
+        </Paper>
+        <Paper sx={{ p: 2, mt:4, borderRadius: 4 }}>
+          <Card>
+            <CardContent>
+              <CardHeader
+                  title={"Tasks"}
+                  avatar={<Avatar>{"T"}</Avatar>}
+                />
+              <Box mb={2}>
+                {jobId && tasks && tasks.length > 0 && (
+                  <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} jobId={jobId} />                
+                )}
+              </Box>
+              
               <Typography variant='h5'>Add a task</Typography>
               <AddTaskForm jobId={jobId} tasks={tasks} />
             </CardContent>
