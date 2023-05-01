@@ -7,6 +7,7 @@ import TaskTable from '../Tasks/Tasks';
 import AddTaskForm from '../Tasks/addTaskForm';
 import socket from '../../socket';
 import { apiUrl } from '../../api/config';
+import JobId from './JobIdField';
 
 function App({ jobId }) {
   const [job, setJob] = useState({});
@@ -214,16 +215,19 @@ function App({ jobId }) {
               />
             )}
             <CardContent>
-              <Typography>{job.description}</Typography>
-              <Typography>jobId: {jobId}</Typography>
-              {jobId && tasks && tasks.length > 0 && (
-                <Box mt={2} mb={2}>
-                  <div>
-                    <Typography variant='h5'>Tasks</Typography>
-                    <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} jobId={jobId} />
-                  </div>
-                </Box>
-              )}
+              <Box mb={2}>
+              <Typography variant='h5'>Description</Typography>
+                <Typography variant='p'>{job.description}</Typography>
+              </Box>
+              <Box mt={2} mb={2}>
+                <JobId jobId={jobId} />
+              </Box>
+              <Box mt={2} mb={2}>
+                <Typography variant='h5'>Tasks</Typography>
+                {jobId && tasks && tasks.length > 0 && (
+                  <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} jobId={jobId} />                
+                )}
+              </Box>
               <Box mb={2}>
                 {jobId && job.name && (
                   <div>
