@@ -8,8 +8,12 @@ import {
   Chip,
   Button,
   CircularProgress,
-  LinearProgress
+  LinearProgress,
+  IconButton,
+  Menu,
+  MenuItem,
 } from '@mui/material';
+import { MoreVert as MoreVertIcon } from '@mui/icons-material';
 import axios from 'axios';
 import TaskMenu from './components/TaskMenu';
 
@@ -97,7 +101,9 @@ function TaskTable({ tasks, handleViewOutput, jobId }) {
               <CircularProgress size={20}/>
             ) : (
               <div>
-                <Button onClick={(event) => handleMenuClick(event, task.id)}>Task Actions</Button>
+                <IconButton onClick={(event) => handleMenuClick(event, task.id)}>
+                    <MoreVertIcon />
+                </IconButton>
                 {task.status === 'done' || task.status === 'error' || task.status === 'pending' ? (
                   <TaskMenu
                     anchorEl={anchorEls[task.id]}
