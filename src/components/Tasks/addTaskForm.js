@@ -10,7 +10,7 @@ import {
   Stack,
 } from '@mui/material';
 
-const AddTaskForm = ({ jobId, tasks }) => {
+const AddTaskForm = ({ jobId, tasks, jobArguments }) => {
   const [selectedTask, setSelectedTask] = useState('');
   const [name, setName] = useState('');
   const [args, setArgs] = useState({});
@@ -123,6 +123,14 @@ const AddTaskForm = ({ jobId, tasks }) => {
             key={task.id} 
             label={" 🪄 " + task.name}
             onClick={() => copyToClipboard(task.id)}
+            />
+          ))}
+
+          {jobArguments && jobArguments.map(argument => (
+            <Chip color="primary"
+            key={argument.name} 
+            label={" 🪄 " + argument.name}
+            onClick={() => copyToClipboard(argument.name)}
             />
           ))}
       </Stack>

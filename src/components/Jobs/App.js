@@ -277,7 +277,7 @@ function App({ jobId }) {
               </Box>
               
               <Typography variant='h5'>Add a task</Typography>
-              <AddTaskForm jobId={jobId} tasks={tasks} />
+              <AddTaskForm jobId={jobId} tasks={tasks} jobArguments={job.arguments} />
             </CardContent>
           </Card>
         </Paper>
