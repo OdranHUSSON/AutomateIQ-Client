@@ -11,6 +11,7 @@ import {
   LinearProgress
 } from '@mui/material';
 import axios from 'axios';
+import TaskMenu from './components/TaskMenu';
 
 function TaskTable({ tasks, handleViewOutput, jobId }) {
 
@@ -59,10 +60,21 @@ function TaskTable({ tasks, handleViewOutput, jobId }) {
     }
   };
 
-  const handleClick = useCallback((task) => {
-    console.log(task)
-    handleViewOutput(task)
-  }, [handleViewOutput]);
+  // TASK DROPDOWN MENU
+  const [anchorEls, setAnchorEls] = React.useState({});
+
+  const handleMenuClick = (event, taskId) => {
+    console.log('handleMenuClick', event, taskId);
+    setAnchorEls({ ...anchorEls, [taskId]: event.currentTarget });
+    console.log('anchorEls', anchorEls);
+  };
+
+  const handleMenuClose = (taskId) => {
+    const newAnchorEls = { ...anchorEls };
+    delete newAnchorEls[taskId];
+    setAnchorEls(newAnchorEls);
+    console.log('anchorEls', anchorEls);
+  };
 
   return (
     <Table>
@@ -85,12 +97,16 @@ function TaskTable({ tasks, handleViewOutput, jobId }) {
               <CircularProgress size={20}/>
             ) : (
               <div>
+                <Button onClick={(event) => handleMenuClick(event, task.id)}>Task Actions</Button>
                 {task.status === 'done' || task.status === 'error' || task.status === 'pending' ? (
-                  <div>
-                    <Button onClick={() => handleClick(task)}>View Output</Button>
-                    <Button onClick={() => restartTask(task.id)}>Restart</Button>
-                    <Button onClick={() => deleteTask(task.id)}>Delete</Button>
-                  </div>
+                  <TaskMenu
+                    anchorEl={anchorEls[task.id]}
+                    handleMenuClose={() => handleMenuClose(task.id)}
+                    handleViewOutput={handleViewOutput}
+                    task={task}
+                    restartTask={restartTask}
+                    deleteTask={deleteTask}
+                  />
                 ) : null}
               </div>
             )}
