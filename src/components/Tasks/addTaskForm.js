@@ -8,6 +8,7 @@ import {
   Button,
   Chip,
   Stack,
+  Autocomplete,
 } from '@mui/material';
 
 const AddTaskForm = ({ jobId, tasks }) => {
@@ -74,6 +75,7 @@ const AddTaskForm = ({ jobId, tasks }) => {
   const copyToClipboard = (id) => {
     navigator.clipboard.writeText(`outputFrom=${id}`);
   };
+  console.log(allowedCommands);
 
   return (
     <form onSubmit={handleSubmit}>
@@ -81,19 +83,16 @@ const AddTaskForm = ({ jobId, tasks }) => {
 
       <FormControl variant="outlined" fullWidth margin="normal">
         <InputLabel id="task-label">Task</InputLabel>
-        <Select
-          labelId="task-label"
-          id="task-select"
-          value={selectedTask}
-          onChange={handleTaskChange}
-          label="Task"
-        >
-          {Object.keys(allowedCommands).map((task) => (
-            <MenuItem key={task} value={task}>
-              {allowedCommands[task]['label'] || task}
-            </MenuItem>
-          ))}
-        </Select>
+        <Autocomplete
+            disablePortal
+            labelId="task-label"
+            id="task-select"
+            value={selectedTask}
+            onChange={handleTaskChange}
+            options={Object.values(allowedCommands)}
+            renderInput={(params) => <TextField {...params} />}
+        />
+
       </FormControl>
 
       <TextField

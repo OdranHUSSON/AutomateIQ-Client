@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Card, CardHeader, CardContent, Button, TextField, CircularProgress, Typography, Box, Avatar, Paper } from '@mui/material';
+import { Grid, Card, CardHeader, CardActions, LinearProgress, CardContent, Button, TextField, CircularProgress, Typography, Box, Avatar, Paper } from '@mui/material';
 import { Link, useNavigate } from "react-router-dom";
 import socket from '../../socket';
 import { apiUrl } from '../../api/config';
@@ -16,6 +16,7 @@ function ListJobs() {
       try {
         const response = await fetch(`${apiUrl}/jobs`);
         const data = await response.json();
+
         setJobs(data.Jobs);
       } catch (error) {
         console.error('Error fetching jobs:', error);
@@ -162,14 +163,18 @@ function ListJobs() {
                 <CardContent>
                   <p>{job.description}</p>
                 </CardContent>
-                <CardContent>
-                  <Button component={Link} to={`/job/${job.job_id}`} variant="contained" color="primary">
+                <CardActions>
+                  <Button component={Link} to={`/job/${job.job_id}`} variant="contained" color="primary" size="small">
                     View Job
                   </Button>
-                  <Button onClick={() => handleDeleteJob(job.job_id)} variant="contained" color="secondary" style={{marginLeft: '10px'}}>
+                  <Button onClick={() => handleDeleteJob(job.job_id)} variant="contained" color="secondary" size="small" style={{marginLeft: '10px'}}>
                     Delete Job
                   </Button>
-                </CardContent>
+                </CardActions>
+                {job.status === 'inprogress' && (
+                    <CardContent>
+                      <LinearProgress />
+                    </CardContent>)}
               </Card>
               </Box>
             </Paper>
