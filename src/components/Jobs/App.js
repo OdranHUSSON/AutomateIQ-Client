@@ -8,6 +8,8 @@ import AddTaskForm from '../Tasks/addTaskForm';
 import socket from '../../socket';
 import { apiUrl } from '../../api/config';
 import JobId from './JobIdField';
+import AddArgumentForm from './AddArgumentForm';
+import ArgumentForm from './ArgumentForm';
 
 function App({ jobId }) {
   const [job, setJob] = useState({});
@@ -105,9 +107,9 @@ function App({ jobId }) {
     if(jobId) {
       const response = await fetch(`${apiUrl}/jobs/${jobId}`);
       let data = await response.json();
-      console.log(data)
       data.Job.jobId = data.Job.job_id;
-      setJob(data.Job);
+      console.log(JSON.stringify(data.Job.arguments))
+      setJob(data.Job);      
       setAllTasks(data.Job)
       handleJobUpdate(data.Job.jobId, false)
       setProgress(data.Job.progress)
@@ -200,6 +202,10 @@ function App({ jobId }) {
       setIsRestarting(false);
     }
   }
+
+  function updateArgument() {
+
+  }
   
   
 
@@ -220,6 +226,16 @@ function App({ jobId }) {
               </Box>
               <Box mt={2} mb={2}>
                 <JobId jobId={jobId} />
+              </Box>
+              <Box mt={2} mb={2}>
+                <Typography variant='p'>Arguments</Typography>
+                {jobId && job.arguments && (
+                  <ArgumentForm jobArguments={job.arguments} argumentChangeCallback={updateArgument} />
+                )}
+              </Box>
+              <Box mt={2} mb={2}>
+              <Typography variant='p'>Add Argument</Typography>
+                <AddArgumentForm jobId={jobId} />
               </Box>
               <Box mb={2}>
                 {jobId && job.name && (
