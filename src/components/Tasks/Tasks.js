@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { MoreVert as MoreVertIcon } from '@mui/icons-material';
 import axios from 'axios';
-import TaskMenu from './components/TaskMenu';
+import TaskMenu from './TaskMenu';
 
 function TaskTable({ tasks, handleViewOutput, jobId }) {
 

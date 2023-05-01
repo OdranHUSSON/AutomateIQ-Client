@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import io from 'socket.io-client';
 import { Button, Grid, LinearProgress, Box, ButtonGroup, Paper, Card, CardContent, CardHeader, Avatar, Typography } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import MarkdownViewer from './MarkdownViewer';
-import TaskTable from './Tasks';
-import AddTaskForm from './addTaskForm';
-import socket from './socket';
-import { apiUrl } from './api/config';
+import MarkdownViewer from '../MarkdownViewer/MarkdownViewer';
+import TaskTable from '../Tasks/Tasks';
+import AddTaskForm from '../Tasks/addTaskForm';
+import socket from '../../socket';
+import { apiUrl } from '../../api/config';
 
 function App({ jobId }) {
   const [job, setJob] = useState({});
@@ -137,10 +137,12 @@ function App({ jobId }) {
       }
     });
 
-    socket.on('Task:Delete', (data) => {
-      console.log(`TASL DELETE CALLED ${data.taskId}`);
+    socket.on('Job:Delete', (data) => {
+      console.log(`JOB DELETE CALLED ${data.jobId}`);
       console.log(data)
-      deleteTask(data.taskId);
+      if (data.jobId === jobId ) {
+        deleteTask(data.taskId, true);
+      }
     });
   
     socket.on('Task:Update', (data) => {

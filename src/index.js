@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Route, Routes, useParams } from 'react-router-dom';
 import { InputLabel, Button, createTheme, ThemeProvider, Grid, LinearProgress, FormControl, Select, MenuItem, ButtonGroup, Box, Typography, Alert } from '@mui/material';
 import './index.css';
-import App from './App';
-import ListJobs from './ListJobs';
+import App from './components/Jobs/App';
+import ListJobs from './components/Jobs/ListJobs';
 import reportWebVitals from './reportWebVitals';
 import socket from './socket';
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Grid, Card, CardHeader, CardContent, Button, TextField, CircularProgress, Typography, Box, Avatar, Paper } from '@mui/material';
 import { Link, useNavigate } from "react-router-dom";
-import socket from './socket';
-import { apiUrl } from './api/config';
+import socket from '../../socket';
+import { apiUrl } from '../../api/config';
 
 function ListJobs() {
   const [jobs, setJobs] = useState([]);
