@@ -228,7 +228,7 @@ function App({ jobId }) {
                 <JobId jobId={jobId} />
               </Box>
               <Box mt={2} mb={2}>
-                <Typography variant='p'>Arguments</Typography>
+              <Typography variant='p'>Arguments</Typography>
                 {jobId && job.arguments && (
                   <ArgumentForm jobArguments={job.arguments} argumentChangeCallback={updateArgument} />
                 )}

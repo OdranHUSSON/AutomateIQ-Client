@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TextField, Button, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { TextField, Box, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 
 const ArgumentForm = ({ jobArguments, argumentChangeCallback }) => {
   console.log(jobArguments)
@@ -13,19 +13,19 @@ const ArgumentForm = ({ jobArguments, argumentChangeCallback }) => {
   };
 
   return (
-    <form>
+    <Box mt={2}>
       {argumentValues.map((argument, index) => (
-        <div key={index}>
+        <FormControl key={index} mt={2} fullWidth margin='dense'>
           <TextField
             key={index}
             label={argument.name}
             value={argument.value}
+            m={2}
             onChange={(event) => handleArgumentChange(event, index)}
-            fullWidth
           />
-        </div>
+        </FormControl>
       ))}
-    </form>
+    </Box>
   );
 };
 
