@@ -107,7 +107,7 @@ function App({ jobId }) {
     if(jobId) {
       const response = await fetch(`${apiUrl}/jobs/${jobId}`);
       let data = await response.json();
-      data.Job.jobId = data.Job.job_id;
+      data.Job.jobId = jobId;
       console.log(JSON.stringify(data.Job.arguments))
       setJob(data.Job);      
       setAllTasks(data.Job)
@@ -185,10 +185,15 @@ function App({ jobId }) {
   async function restartJob() {
     try {
       setIsRestarting(true);
-      const response = await fetch(`${apiUrl}/job/restart/${jobId}`);
+      const response = await fetch(`${apiUrl}/job/restart/${jobId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ arguments: job.arguments })
+      });
       const data = await response.json();
-      console.log(response)
-
+  
       if (response.ok) {
         console.log('Job restarted successfully:', data);
         setTasks(tasks => tasks.map(task => ({...task, status: 'pending'})));
@@ -202,9 +207,12 @@ function App({ jobId }) {
       setIsRestarting(false);
     }
   }
+  
 
-  function updateArgument() {
-
+  function handleUpdateArguments(newArguments) {
+    console.log(newArguments)
+    job.arguments = newArguments;
+    console.log(job.arguments)
   }
   
   
@@ -230,7 +238,7 @@ function App({ jobId }) {
               <Box mt={2} mb={2}>
               <Typography variant='p'>Arguments</Typography>
                 {jobId && job.arguments && (
-                  <ArgumentForm jobArguments={job.arguments} argumentChangeCallback={updateArgument} />
+                  <ArgumentForm jobArguments={job.arguments} argumentChangeCallback={handleUpdateArguments} />
                 )}
               </Box>
               <Box mt={2} mb={2}>
