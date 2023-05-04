@@ -9,6 +9,7 @@ import {
   Chip,
   Stack,
   Autocomplete,
+  Grid,
 } from '@mui/material';
 
 const AddTaskForm = ({ jobId, tasks }) => {
@@ -53,7 +54,7 @@ const AddTaskForm = ({ jobId, tasks }) => {
     console.log(body)
 
     try {
-        console.log(JSON.stringify(body))
+      console.log(JSON.stringify(body))
       const response = await fetch(`http://localhost:3000/api/job/${jobId}/task`, {
         method: 'POST',
         headers: {
@@ -78,58 +79,61 @@ const AddTaskForm = ({ jobId, tasks }) => {
   console.log(allowedCommands);
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="hidden" name="jobId" value={jobId} />
+      <form onSubmit={handleSubmit}>
+        <input type="hidden" name="jobId" value={jobId} />
 
-      <FormControl variant="outlined" fullWidth margin="normal">
-        <InputLabel id="task-label">Task</InputLabel>
-        <Autocomplete
-            disablePortal
-            labelId="task-label"
-            id="task-select"
-            value={selectedTask}
-            onChange={handleTaskChange}
-            options={Object.values(allowedCommands)}
-            renderInput={(params) => <TextField {...params} />}
-        />
+        <FormControl variant="outlined" fullWidth margin="normal">
+          <InputLabel id="task-label">Task</InputLabel>
+          <Autocomplete
+              disablePortal
+              labelId="task-label"
+              id="task-select"
+              value={selectedTask}
+              onChange={handleTaskChange}
+              options={Object.values(allowedCommands)}
+              renderInput={(params) => <TextField {...params} />}
+          />
 
-      </FormControl>
+        </FormControl>
 
-      <TextField
-          key={"name"}
-          name={"name"}
-          label={"name"}
-          fullWidth
-          margin="normal"
-          onChange={handleNameChange}
-        />
-
-      {allowedCommands[selectedTask]?.arguments.map((arg) => (
         <TextField
-          key={arg}
-          name={arg}
-          label={arg}
-          fullWidth
-          margin="normal"
-          value={args[arg] || ''}
-          multiline
-          onChange={handleArgChange}
+            key={"name"}
+            name={"name"}
+            label={"name"}
+            fullWidth
+            margin="normal"
+            onChange={handleNameChange}
         />
-      ))}
-      <Stack mt={2} mb={2} direction="row" spacing={1}>
-        {tasks && tasks.map(task => (
-            <Chip color="primary"
-            key={task.id} 
-            label={" 🪄 " + task.name}
-            onClick={() => copyToClipboard(task.id)}
-            />
-          ))}
-      </Stack>
 
-      <Button type="submit" variant="contained" color="primary">
-        Add Task
-      </Button>
-    </form>
+        {allowedCommands[selectedTask]?.arguments.map((arg) => (
+            <TextField
+                key={arg}
+                name={arg}
+                label={arg}
+                fullWidth
+                margin="normal"
+                value={args[arg] || ''}
+                multiline
+                onChange={handleArgChange}
+            />
+        ))}
+
+        <Grid container spacing={2} paddingBottom={2} paddingTop={1}>
+          {tasks && tasks.map(task => (
+              <Grid item>
+                <Chip color="primary"
+                      key={task.id}
+                      label={" 🪄 " + task.name}
+                      onClick={() => copyToClipboard(task.id)}
+                />
+              </Grid>
+          ))}
+        </Grid>
+
+        <Button type="submit" variant="contained" color="primary">
+          Add Task
+        </Button>
+      </form>
   );
 };
 
