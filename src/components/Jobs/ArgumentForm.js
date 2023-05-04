@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { TextField, Box, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 
 const ArgumentForm = ({ jobArguments, argumentChangeCallback }) => {
-  console.log(jobArguments)
   const [argumentValues, setArgumentValues] = useState(jobArguments || []);
 
   const handleArgumentChange = (event, index) => {
