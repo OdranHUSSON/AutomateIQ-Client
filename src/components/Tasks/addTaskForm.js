@@ -33,7 +33,6 @@ const AddTaskForm = ({ jobId, tasks, jobArguments }) => {
   }, []);
 
   const handleTaskChange = (newValue) => {
-    console.log(newValue)
     setSelectedTask(newValue);
     setArgs({});
   };
@@ -77,7 +76,6 @@ const AddTaskForm = ({ jobId, tasks, jobArguments }) => {
   const copyToClipboard = (id, prefix='outputFrom') => {
     navigator.clipboard.writeText(`${prefix}=${id}`);
   };
-  console.log(allowedCommands);
 
   return (
     <form onSubmit={handleSubmit}>
