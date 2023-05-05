@@ -8,6 +8,8 @@ import AddTaskForm from '../Tasks/addTaskForm';
 import socket from '../../socket';
 import { apiUrl } from '../../api/config';
 import JobId from './JobIdField';
+import AddArgumentForm from './AddArgumentForm';
+import ArgumentForm from './ArgumentForm';
 
 function App({ jobId }) {
   const [job, setJob] = useState({});
@@ -15,6 +17,8 @@ function App({ jobId }) {
   const [done, setDone] = useState(false);
   const [displayTask, setDisplayTask] = useState('');
   const [isRestarting, setIsRestarting] = useState(false);
+  const [argumentsState, setArgumentsState] = useState(null);
+
 
   // TASKS 
   const [tasks, setTasks] = useState([]);
@@ -105,16 +109,15 @@ function App({ jobId }) {
     if(jobId) {
       const response = await fetch(`${apiUrl}/jobs/${jobId}`);
       let data = await response.json();
-      console.log(data)
-      data.Job.jobId = data.Job.job_id;
-      setJob(data.Job);
+      data.Job.jobId = jobId;
+      setJob(data.Job);      
       setAllTasks(data.Job)
-      handleJobUpdate(data.Job.jobId, false)
+      setArgumentsState(data.Job.arguments);
+      handleJobUpdate(data.Job, false)
       setProgress(data.Job.progress)
       return data;
     }
   }
-
 
   function handleViewOutput(task) {
     setDisplayTask(task);
@@ -183,10 +186,15 @@ function App({ jobId }) {
   async function restartJob() {
     try {
       setIsRestarting(true);
-      const response = await fetch(`${apiUrl}/job/restart/${jobId}`);
+      const response = await fetch(`${apiUrl}/job/restart/${jobId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ arguments: argumentsState })
+      });
       const data = await response.json();
-      console.log(response)
-
+  
       if (response.ok) {
         console.log('Job restarted successfully:', data);
         setTasks(tasks => tasks.map(task => ({...task, status: 'pending'})));
@@ -201,7 +209,9 @@ function App({ jobId }) {
     }
   }
   
-  
+  function handleUpdateArguments(newArguments) {
+    setArgumentsState(newArguments);
+  }
 
   return (
     <Grid container spacing={2}>
@@ -220,6 +230,16 @@ function App({ jobId }) {
               </Box>
               <Box mt={2} mb={2}>
                 <JobId jobId={jobId} />
+              </Box>
+              <Box mt={2} mb={2}>
+              <Typography variant='p'>Arguments</Typography>
+                {jobId && argumentsState && (
+                  <ArgumentForm jobArguments={argumentsState} argumentChangeCallback={handleUpdateArguments} />
+                )}
+              </Box>
+              <Box mt={2} mb={2}>
+              <Typography variant='p'>Add Argument</Typography>
+                <AddArgumentForm jobId={jobId} callback={updateJobAndTasks} />
               </Box>
               <Box mb={2}>
                 {jobId && job.name && (
@@ -261,7 +281,7 @@ function App({ jobId }) {
               </Box>
               
               <Typography variant='h5'>Add a task</Typography>
-              <AddTaskForm jobId={jobId} tasks={tasks} />
+              <AddTaskForm jobId={jobId} tasks={tasks} jobArguments={argumentsState} />
             </CardContent>
           </Card>
         </Paper>

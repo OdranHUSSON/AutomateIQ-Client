@@ -24,7 +24,6 @@ function JobId({ jobId }) {
               color="primary"
               onClick={handleCopyClick}
               disabled={false}
-              disablePointerEvents
             >
               <FileCopyIcon />
             </Button>

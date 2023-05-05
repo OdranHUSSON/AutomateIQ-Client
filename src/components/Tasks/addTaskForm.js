@@ -11,8 +11,10 @@ import {
   Autocomplete,
 } from '@mui/material';
 
-const AddTaskForm = ({ jobId, tasks }) => {
-  const [selectedTask, setSelectedTask] = useState('');
+import { apiUrl } from '../../api/config';
+
+const AddTaskForm = ({ jobId, tasks, jobArguments }) => {
+  const [selectedTask, setSelectedTask] = useState(null);
   const [name, setName] = useState('');
   const [args, setArgs] = useState({});
   const [allowedCommands, setAllowedCommands] = useState(null);
@@ -20,7 +22,7 @@ const AddTaskForm = ({ jobId, tasks }) => {
   useEffect(() => {
     const fetchAllowedCommands = async () => {
       try {
-        const response = await fetch('http://localhost:3000/allowedTasks');
+        const response = await fetch(`${apiUrl}/allowedTasks`);
         const data = await response.json();
         setAllowedCommands(data.allowedCommands);
       } catch (error) {
@@ -30,8 +32,8 @@ const AddTaskForm = ({ jobId, tasks }) => {
     fetchAllowedCommands();
   }, []);
 
-  const handleTaskChange = (event) => {
-    setSelectedTask(event.target.value);
+  const handleTaskChange = (newValue) => {
+    setSelectedTask(newValue);
     setArgs({});
   };
 
@@ -50,11 +52,10 @@ const AddTaskForm = ({ jobId, tasks }) => {
     event.preventDefault();
     const functionName = selectedTask;
     const body = { functionName, args, jobId, name };
-    console.log(body)
 
     try {
         console.log(JSON.stringify(body))
-      const response = await fetch(`http://localhost:3000/api/job/${jobId}/task`, {
+      const response = await fetch(`${apiUrl}/api/job/${jobId}/task`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -62,7 +63,7 @@ const AddTaskForm = ({ jobId, tasks }) => {
         body: JSON.stringify(body),
       });
       const data = await response.json();
-      console.log(data);
+
     } catch (error) {
       console.error(error);
     }
@@ -72,28 +73,26 @@ const AddTaskForm = ({ jobId, tasks }) => {
     return <p>Loading...</p>;
   }
 
-  const copyToClipboard = (id) => {
-    navigator.clipboard.writeText(`outputFrom=${id}`);
+  const copyToClipboard = (id, prefix='outputFrom') => {
+    navigator.clipboard.writeText(`${prefix}=${id}`);
   };
-  console.log(allowedCommands);
 
   return (
     <form onSubmit={handleSubmit}>
       <input type="hidden" name="jobId" value={jobId} />
-
-      <FormControl variant="outlined" fullWidth margin="normal">
+      {allowedCommands  && (
+        <FormControl variant="outlined" fullWidth margin="normal">
         <InputLabel id="task-label">Task</InputLabel>
         <Autocomplete
-            disablePortal
-            labelId="task-label"
-            id="task-select"
-            value={selectedTask}
-            onChange={handleTaskChange}
-            options={Object.values(allowedCommands)}
-            renderInput={(params) => <TextField {...params} />}
+          options={Object.keys(allowedCommands)} // Use Object.keys to get the option keys
+          getOptionLabel={(option) => allowedCommands[option].label} // Use the label property of the corresponding object
+          value={selectedTask}
+          onChange={(event, newValue) => handleTaskChange(newValue)}
+          renderInput={(params) => <TextField {...params} label="Task" />}
         />
-
       </FormControl>
+
+      )}
 
       <TextField
           key={"name"}
@@ -104,7 +103,7 @@ const AddTaskForm = ({ jobId, tasks }) => {
           onChange={handleNameChange}
         />
 
-      {allowedCommands[selectedTask]?.arguments.map((arg) => (
+      {selectedTask && allowedCommands && allowedCommands[selectedTask].arguments.map((arg) => (
         <TextField
           key={arg}
           name={arg}
@@ -122,6 +121,14 @@ const AddTaskForm = ({ jobId, tasks }) => {
             key={task.id} 
             label={" 🪄 " + task.name}
             onClick={() => copyToClipboard(task.id)}
+            />
+          ))}
+
+          {jobArguments && jobArguments.map(argument => (
+            <Chip color="primary"
+            key={argument.name} 
+            label={" 🪄 " + argument.name}
+            onClick={() => copyToClipboard(argument.name, 'variable')}
             />
           ))}
       </Stack>
