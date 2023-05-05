@@ -3,7 +3,7 @@ import { TextField, Button, Select, MenuItem, FormControl, InputLabel } from '@m
 import axios from 'axios';
 import { apiUrl } from '../../api/config';
 
-const AddArgumentForm = ({ jobId }) => {
+const AddArgumentForm = ({ jobId, callback }) => {
   const [name, setName] = useState('');
   const [value, setValue] = useState('');
   const [type, setType] = useState('string');
@@ -26,6 +26,7 @@ const AddArgumentForm = ({ jobId }) => {
     try {
       const response = await axios.post(`${apiUrl}/api/job/${jobId}/argument`, { type, name, value });
 
+      callback();
       console.log(response.data);
       // Do something with the response data, like updating the UI or displaying a success message
     } catch (error) {

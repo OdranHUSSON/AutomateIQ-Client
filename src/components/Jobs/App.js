@@ -17,6 +17,8 @@ function App({ jobId }) {
   const [done, setDone] = useState(false);
   const [displayTask, setDisplayTask] = useState('');
   const [isRestarting, setIsRestarting] = useState(false);
+  const [argumentsState, setArgumentsState] = useState(null);
+
 
   // TASKS 
   const [tasks, setTasks] = useState([]);
@@ -108,15 +110,14 @@ function App({ jobId }) {
       const response = await fetch(`${apiUrl}/jobs/${jobId}`);
       let data = await response.json();
       data.Job.jobId = jobId;
-      console.log(JSON.stringify(data.Job.arguments))
       setJob(data.Job);      
       setAllTasks(data.Job)
-      handleJobUpdate(data.Job.jobId, false)
+      setArgumentsState(data.Job.arguments);
+      handleJobUpdate(data.Job, false)
       setProgress(data.Job.progress)
       return data;
     }
   }
-
 
   function handleViewOutput(task) {
     setDisplayTask(task);
@@ -190,7 +191,7 @@ function App({ jobId }) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ arguments: job.arguments })
+        body: JSON.stringify({ arguments: argumentsState })
       });
       const data = await response.json();
   
@@ -208,14 +209,9 @@ function App({ jobId }) {
     }
   }
   
-
   function handleUpdateArguments(newArguments) {
-    console.log(newArguments)
-    job.arguments = newArguments;
-    console.log(job.arguments)
+    setArgumentsState(newArguments);
   }
-  
-  
 
   return (
     <Grid container spacing={2}>
@@ -237,13 +233,13 @@ function App({ jobId }) {
               </Box>
               <Box mt={2} mb={2}>
               <Typography variant='p'>Arguments</Typography>
-                {jobId && job.arguments && (
-                  <ArgumentForm jobArguments={job.arguments} argumentChangeCallback={handleUpdateArguments} />
+                {jobId && argumentsState && (
+                  <ArgumentForm jobArguments={argumentsState} argumentChangeCallback={handleUpdateArguments} />
                 )}
               </Box>
               <Box mt={2} mb={2}>
               <Typography variant='p'>Add Argument</Typography>
-                <AddArgumentForm jobId={jobId} />
+                <AddArgumentForm jobId={jobId} callback={updateJobAndTasks} />
               </Box>
               <Box mb={2}>
                 {jobId && job.name && (
@@ -285,7 +281,7 @@ function App({ jobId }) {
               </Box>
               
               <Typography variant='h5'>Add a task</Typography>
-              <AddTaskForm jobId={jobId} tasks={tasks} jobArguments={job.arguments} />
+              <AddTaskForm jobId={jobId} tasks={tasks} jobArguments={argumentsState} />
             </CardContent>
           </Card>
         </Paper>
