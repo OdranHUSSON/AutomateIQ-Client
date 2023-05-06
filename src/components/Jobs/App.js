@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import io from 'socket.io-client';
-import { Button, Grid, LinearProgress, Box, ButtonGroup, Paper, Card, CardContent, CardHeader, Avatar, Typography } from '@mui/material';
+import { Button, Grid, LinearProgress, Box, ButtonGroup, Paper, Card, CardContent, CardHeader, Avatar, TextField } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import MarkdownViewer from '../MarkdownViewer/MarkdownViewer';
 import TaskTable from '../Tasks/Tasks';
@@ -10,6 +10,15 @@ import { apiUrl } from '../../api/config';
 import JobId from './JobIdField';
 import AddArgumentForm from './AddArgumentForm';
 import ArgumentForm from './ArgumentForm';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import AddIcon from '@mui/icons-material/Add';
+import CardActions from '@mui/material/CardActions';
+import IconButton from '@mui/material/IconButton';
+
+
 
 function App({ jobId }) {
   const [job, setJob] = useState({});
@@ -18,6 +27,9 @@ function App({ jobId }) {
   const [displayTask, setDisplayTask] = useState('');
   const [isRestarting, setIsRestarting] = useState(false);
   const [argumentsState, setArgumentsState] = useState(null);
+  const [openAddTaskDialog, setOpenAddTaskDialog] = useState(false);
+  const [openAddArgumentDialog, setOpenAddArgumentDialog] = useState(false);
+
 
 
   // TASKS 
@@ -213,6 +225,23 @@ function App({ jobId }) {
     setArgumentsState(newArguments);
   }
 
+  const handleOpenAddTaskDialog = () => {
+    setOpenAddTaskDialog(true);
+  };
+  
+  const handleCloseAddTaskDialog = () => {
+    setOpenAddTaskDialog(false);
+  };
+  
+  const handleOpenAddArgumentDialog = () => {
+    setOpenAddArgumentDialog(true);
+  };
+  
+  const handleCloseAddArgumentDialog = () => {
+    setOpenAddArgumentDialog(false);
+  };
+  
+
   return (
     <Grid container spacing={2}>
       <Grid item xs={4}>
@@ -226,20 +255,15 @@ function App({ jobId }) {
             )}
             <CardContent>
               <Box mb={2}>
-                <Typography variant='p'>{job.description}</Typography>
+                <TextField 
+                  variant="outlined"
+                  label="Description"
+                  fullWidth
+                  value={job.description}
+                />
               </Box>
               <Box mt={2} mb={2}>
                 <JobId jobId={jobId} />
-              </Box>
-              <Box mt={2} mb={2}>
-              <Typography variant='p'>Arguments</Typography>
-                {jobId && argumentsState && (
-                  <ArgumentForm jobArguments={argumentsState} argumentChangeCallback={handleUpdateArguments} />
-                )}
-              </Box>
-              <Box mt={2} mb={2}>
-              <Typography variant='p'>Add Argument</Typography>
-                <AddArgumentForm jobId={jobId} callback={updateJobAndTasks} />
               </Box>
               <Box mb={2}>
                 {jobId && job.name && (
@@ -265,6 +289,39 @@ function App({ jobId }) {
                 )}
               </Box>
             </CardContent>
+            </Card>
+          </Paper>
+          <Paper sx={{ p: 2, mt:2, borderRadius: 4 }}>
+            <Card>
+            <CardHeader
+                title={"Arguments"}
+                avatar={<Avatar>{"A"}</Avatar>}
+            />
+            <CardContent>
+              <Box mt={2} mb={2}>
+                {jobId && argumentsState && (
+                  <ArgumentForm jobArguments={argumentsState} argumentChangeCallback={handleUpdateArguments} />
+                )}
+              </Box>
+              <Box mb={2}>
+                <Dialog open={openAddArgumentDialog} onClose={handleCloseAddArgumentDialog} aria-labelledby="form-dialog-title">
+                  <DialogTitle id="form-dialog-title">Add Argument</DialogTitle>
+                  <DialogContent>
+                    <AddArgumentForm jobId={jobId} callback={updateJobAndTasks} />
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleCloseAddArgumentDialog} color="primary">
+                      Cancel
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </Box>
+            </CardContent>
+            <CardActions sx={{ justifyContent: 'flex-end' }}>
+              <IconButton color="primary" onClick={handleOpenAddArgumentDialog}>
+                <AddIcon />
+              </IconButton>
+            </CardActions>
           </Card>
         </Paper>
         <Paper sx={{ p: 2, mt:4, borderRadius: 4 }}>
@@ -279,10 +336,25 @@ function App({ jobId }) {
                   <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} jobId={jobId} />                
                 )}
               </Box>
-              
-              <Typography variant='h5'>Add a task</Typography>
-              <AddTaskForm jobId={jobId} tasks={tasks} jobArguments={argumentsState} />
+              <Box mb={2}>
+                <Dialog open={openAddTaskDialog} onClose={handleCloseAddTaskDialog} aria-labelledby="form-dialog-title">
+                  <DialogTitle id="form-dialog-title">Add a Task</DialogTitle>
+                  <DialogContent>
+                    <AddTaskForm jobId={jobId} tasks={tasks} jobArguments={argumentsState} />
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleCloseAddTaskDialog} color="primary">
+                      Cancel
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </Box>
             </CardContent>
+            <CardActions sx={{ justifyContent: 'flex-end' }}>
+              <IconButton color="primary" onClick={handleOpenAddTaskDialog}>
+                <AddIcon />
+              </IconButton>
+            </CardActions>
           </Card>
         </Paper>
       </Grid>

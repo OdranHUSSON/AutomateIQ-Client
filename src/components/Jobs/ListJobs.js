@@ -32,7 +32,7 @@ function ListJobs() {
   
   
   function handleJobDelete(jobId) {
-    const updatedJobs = jobs.filter(job => job.job_id !== jobId);
+    const updatedJobs = jobs.filter(job => job.jobId !== jobId);
     setJobs(updatedJobs);
   }
 
