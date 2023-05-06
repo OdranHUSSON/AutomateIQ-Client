@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import io from 'socket.io-client';
-import { Button, Grid, LinearProgress, Box, ButtonGroup, Paper, Card, CardContent, CardHeader, Avatar, TextField } from '@mui/material';
+import { Button, Grid, LinearProgress, Box, ButtonGroup, Paper, Card, CardContent, CardHeader, Avatar, TextField, Typography } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import MarkdownViewer from '../MarkdownViewer/MarkdownViewer';
 import TaskTable from '../Tasks/Tasks';
@@ -361,11 +361,24 @@ function App({ jobId }) {
       <Grid item xs={8}>
         <Paper sx={{ p: 2, borderRadius: 4 }}>
           <Box mt={2} mb={2}>
-            <h2>Outputs</h2>
+          <Typography variant='h5'>Outputs</Typography>
           </Box>
-          <Box mt={2} mb={2} borderRadius={4}>
-            {displayTask && <MarkdownViewer task={displayTask} />}
+          {tasks.map((task, index) => (
+          <Box key={index} mt={2} mb={2} borderRadius={4}>
+            <Typography variant='h6'>{task.name}</Typography>
+            {(task.status === 'done' || task.status === 'error') && (
+              task.output.endsWith('.mp3') ? (
+                <audio controls>
+                  <source src={`${apiUrl}/${task.output}`} type="audio/mpeg" />
+                  Your browser does not support the audio element.
+                </audio>
+              ) : (
+                <MarkdownViewer task={task} />
+              )
+            )}
           </Box>
+        ))}
+
         </Paper>
       </Grid>
     </Grid>

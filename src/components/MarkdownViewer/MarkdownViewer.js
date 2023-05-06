@@ -38,9 +38,6 @@ function MarkdownViewer({ task }) {
 
   return (
     <div>
-      <Box mt={4} mb={4}>
-        <h3>Output of {task.name}</h3>
-      </Box>
       <Box p={4} className='light-mode'>
         <ReactMarkdown className='markdown-body' children={markdownContent} remarkPlugins={[remarkGfm]} />
       </Box>
