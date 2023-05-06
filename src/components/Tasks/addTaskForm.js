@@ -9,6 +9,7 @@ import {
   Chip,
   Stack,
   Autocomplete,
+  Grid,
 } from '@mui/material';
 
 import { apiUrl } from '../../api/config';
@@ -105,38 +106,54 @@ const AddTaskForm = ({ jobId, tasks, jobArguments }) => {
 
       {selectedTask && allowedCommands && allowedCommands[selectedTask].arguments.map((arg) => (
         <TextField
-          key={arg}
-          name={arg}
-          label={arg}
-          fullWidth
-          margin="normal"
-          value={args[arg] || ''}
-          multiline
-          onChange={handleArgChange}
+            key={"name"}
+            name={"name"}
+            label={"name"}
+            fullWidth
+            margin="normal"
+            onChange={handleNameChange}
         />
       ))}
-      <Stack mt={2} mb={2} direction="row" spacing={1}>
-        {tasks && tasks.map(task => (
-            <Chip color="primary"
-            key={task.id} 
-            label={" 🪄 " + task.name}
-            onClick={() => copyToClipboard(task.id)}
-            />
-          ))}
 
+        {allowedCommands[selectedTask]?.arguments.map((arg) => (
+            <TextField
+                key={arg}
+                name={arg}
+                label={arg}
+                fullWidth
+                margin="normal"
+                value={args[arg] || ''}
+                multiline
+                onChange={handleArgChange}
+            />
+        ))}
+
+        <Grid container spacing={2} paddingBottom={2} paddingTop={1}>
+          {tasks && tasks.map(task => (
+              <Grid item>
+                <Chip color="primary"
+                    key={task.id}
+                    label={" 🪄 " + task.name}
+                    onClick={() => copyToClipboard(task.id)}
+                />
+              </Grid>
+          ))}
           {jobArguments && jobArguments.map(argument => (
-            <Chip color="primary"
-            key={argument.name} 
-            label={" 🪄 " + argument.name}
-            onClick={() => copyToClipboard(argument.name, 'variable')}
-            />
+            <Grid item>
+              <Chip color="success"
+                key={argument.name} 
+                label={" 🪄 " + argument.name}
+                onClick={() => copyToClipboard(argument.name, 'variable')}
+              />
+            </Grid>
           ))}
-      </Stack>
+        </Grid>
 
-      <Button type="submit" variant="contained" color="primary">
-        Add Task
-      </Button>
-    </form>
+
+        <Button type="submit" variant="contained" color="primary">
+          Add Task
+        </Button>
+      </form>
   );
 };
 
