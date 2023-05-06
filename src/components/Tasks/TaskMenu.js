@@ -2,7 +2,7 @@ import React from 'react';
 import { Menu, ListItem, ListItemIcon, ListItemText, ListSubheader } from '@mui/material';
 import { Visibility, Replay, Delete } from '@mui/icons-material';
 
-function TaskMenu({ anchorEl, handleMenuClose, handleViewOutput, task, restartTask, deleteTask }) {
+function TaskMenu({ anchorEl, handleMenuClose, task, restartTask, deleteTask }) {
   return (
     <Menu
       anchorEl={anchorEl}
@@ -10,12 +10,6 @@ function TaskMenu({ anchorEl, handleMenuClose, handleViewOutput, task, restartTa
       onClose={handleMenuClose}
     >
       <ListSubheader>Task Actions</ListSubheader>
-      <ListItem button onClick={() => handleViewOutput(task)}>
-        <ListItemIcon>
-          <Visibility />
-        </ListItemIcon>
-        <ListItemText primary="View Output" />
-      </ListItem>
       <ListItem button onClick={() => restartTask(task.id)}>
         <ListItemIcon>
           <Replay />

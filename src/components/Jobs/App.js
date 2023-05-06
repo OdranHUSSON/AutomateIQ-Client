@@ -1,22 +1,12 @@
 import React, { useState } from 'react';
-import io from 'socket.io-client';
 import { Button, Grid, LinearProgress, Box, ButtonGroup, Paper, Card, CardContent, CardHeader, Avatar, TextField, Typography } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import MarkdownViewer from '../MarkdownViewer/MarkdownViewer';
-import TaskTable from '../Tasks/Tasks';
-import AddTaskForm from '../Tasks/addTaskForm';
 import socket from '../../socket';
 import { apiUrl } from '../../api/config';
 import JobId from './JobIdField';
-import AddArgumentForm from './AddArgumentForm';
-import ArgumentForm from './ArgumentForm';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import AddIcon from '@mui/icons-material/Add';
-import CardActions from '@mui/material/CardActions';
-import IconButton from '@mui/material/IconButton';
+import OutputComponent from '../Tasks/outputComponent';
+import ArgumentComponent from './ArgumentComponent';
+import TaskComponent from '../Tasks/TaskComponent';
 
 
 
@@ -27,10 +17,6 @@ function App({ jobId }) {
   const [displayTask, setDisplayTask] = useState('');
   const [isRestarting, setIsRestarting] = useState(false);
   const [argumentsState, setArgumentsState] = useState(null);
-  const [openAddTaskDialog, setOpenAddTaskDialog] = useState(false);
-  const [openAddArgumentDialog, setOpenAddArgumentDialog] = useState(false);
-
-
 
   // TASKS 
   const [tasks, setTasks] = useState([]);
@@ -224,22 +210,6 @@ function App({ jobId }) {
   function handleUpdateArguments(newArguments) {
     setArgumentsState(newArguments);
   }
-
-  const handleOpenAddTaskDialog = () => {
-    setOpenAddTaskDialog(true);
-  };
-  
-  const handleCloseAddTaskDialog = () => {
-    setOpenAddTaskDialog(false);
-  };
-  
-  const handleOpenAddArgumentDialog = () => {
-    setOpenAddArgumentDialog(true);
-  };
-  
-  const handleCloseAddArgumentDialog = () => {
-    setOpenAddArgumentDialog(false);
-  };
   
 
   return (
@@ -291,95 +261,11 @@ function App({ jobId }) {
             </CardContent>
             </Card>
           </Paper>
-          <Paper sx={{ p: 2, mt:2, borderRadius: 4 }}>
-            <Card>
-            <CardHeader
-                title={"Arguments"}
-                avatar={<Avatar>{"A"}</Avatar>}
-            />
-            <CardContent>
-              <Box mt={2} mb={2}>
-                {jobId && argumentsState && (
-                  <ArgumentForm jobArguments={argumentsState} argumentChangeCallback={handleUpdateArguments} />
-                )}
-              </Box>
-              <Box mb={2}>
-                <Dialog open={openAddArgumentDialog} onClose={handleCloseAddArgumentDialog} aria-labelledby="form-dialog-title">
-                  <DialogTitle id="form-dialog-title">Add Argument</DialogTitle>
-                  <DialogContent>
-                    <AddArgumentForm jobId={jobId} callback={updateJobAndTasks} />
-                  </DialogContent>
-                  <DialogActions>
-                    <Button onClick={handleCloseAddArgumentDialog} color="primary">
-                      Cancel
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </Box>
-            </CardContent>
-            <CardActions sx={{ justifyContent: 'flex-end' }}>
-              <IconButton color="primary" onClick={handleOpenAddArgumentDialog}>
-                <AddIcon />
-              </IconButton>
-            </CardActions>
-          </Card>
-        </Paper>
-        <Paper sx={{ p: 2, mt:4, borderRadius: 4 }}>
-          <Card>
-            <CardContent>
-              <CardHeader
-                  title={"Tasks"}
-                  avatar={<Avatar>{"T"}</Avatar>}
-                />
-              <Box mb={2}>
-                {jobId && tasks && tasks.length > 0 && (
-                  <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} jobId={jobId} />                
-                )}
-              </Box>
-              <Box mb={2}>
-                <Dialog open={openAddTaskDialog} onClose={handleCloseAddTaskDialog} aria-labelledby="form-dialog-title">
-                  <DialogTitle id="form-dialog-title">Add a Task</DialogTitle>
-                  <DialogContent>
-                    <AddTaskForm jobId={jobId} tasks={tasks} jobArguments={argumentsState} />
-                  </DialogContent>
-                  <DialogActions>
-                    <Button onClick={handleCloseAddTaskDialog} color="primary">
-                      Cancel
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </Box>
-            </CardContent>
-            <CardActions sx={{ justifyContent: 'flex-end' }}>
-              <IconButton color="primary" onClick={handleOpenAddTaskDialog}>
-                <AddIcon />
-              </IconButton>
-            </CardActions>
-          </Card>
-        </Paper>
+          <ArgumentComponent argumentsState={argumentsState} jobId={jobId} handleUpdateArguments={handleUpdateArguments} />
+          <TaskComponent jobId={jobId} tasks={tasks} handleTaskUpdate={handleTaskUpdate} argumentsState={argumentsState}  />
       </Grid>
       <Grid item xs={8}>
-        <Paper sx={{ p: 2, borderRadius: 4 }}>
-          <Box mt={2} mb={2}>
-          <Typography variant='h5'>Outputs</Typography>
-          </Box>
-          {tasks.map((task, index) => (
-          <Box key={index} mt={2} mb={2} borderRadius={4}>
-            <Typography variant='h6'>{task.name}</Typography>
-            {(task.status === 'done' || task.status === 'error') && (
-              task.output.endsWith('.mp3') ? (
-                <audio controls>
-                  <source src={`${apiUrl}/${task.output}`} type="audio/mpeg" />
-                  Your browser does not support the audio element.
-                </audio>
-              ) : (
-                <MarkdownViewer task={task} />
-              )
-            )}
-          </Box>
-        ))}
-
-        </Paper>
+        <OutputComponent tasks={tasks} />
       </Grid>
     </Grid>
   );

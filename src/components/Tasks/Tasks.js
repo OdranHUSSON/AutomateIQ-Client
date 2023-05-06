@@ -18,7 +18,7 @@ import { MoreVert as MoreVertIcon } from '@mui/icons-material';
 import axios from 'axios';
 import TaskMenu from './TaskMenu';
 
-function TaskTable({ tasks, handleViewOutput, jobId }) {
+function TaskTable({ tasks, jobId }) {
 
   function colorFromStatus(status = "unknown") {
     switch (status) {
@@ -109,7 +109,6 @@ function TaskTable({ tasks, handleViewOutput, jobId }) {
                   <TaskMenu
                     anchorEl={anchorEls[task.id]}
                     handleMenuClose={() => handleMenuClose(task.id)}
-                    handleViewOutput={handleViewOutput}
                     task={task}
                     restartTask={restartTask}
                     deleteTask={deleteTask}
