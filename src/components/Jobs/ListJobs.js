@@ -27,8 +27,11 @@ function ListJobs() {
   }, []);
 
   function handleJobCreate(data) {
-    setJobs((jobs) => [...jobs, data]);
+    console.log(data)
+    const newJob = { ...data, jobId: data.job_id };
+    setJobs(jobs => [newJob, ...jobs]);
   }
+  
   
   function handleJobDelete(jobId) {
     const updatedJobs = jobs.filter(job => job.job_id !== jobId);
@@ -91,10 +94,11 @@ function ListJobs() {
         }),
       });
       const data = await response.json();
+      console.log(data)
       setLoading(false);
 
       if (data.status === 200) {
-        navigate.push(`/job/${data.jobId}`);
+        navigate.push(`/job/${data.job_id}`);
       } else {
         throw new Error(data.error);
       }
@@ -164,10 +168,10 @@ function ListJobs() {
                   <p>{job.description}</p>
                 </CardContent>
                 <CardActions>
-                  <Button component={Link} to={`/job/${job.job_id}`} variant="contained" color="primary" size="small">
+                  <Button component={Link} to={`/job/${job.jobId}`} variant="contained" color="primary" size="small">
                     View Job
                   </Button>
-                  <Button onClick={() => handleDeleteJob(job.job_id)} variant="contained" color="secondary" size="small" style={{marginLeft: '10px'}}>
+                  <Button onClick={() => handleDeleteJob(job.jobId)} variant="contained" color="secondary" size="small" style={{marginLeft: '10px'}}>
                     Delete Job
                   </Button>
                 </CardActions>
