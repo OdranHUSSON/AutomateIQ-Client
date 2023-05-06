@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Grid, Card, CardHeader, CardActions, LinearProgress, CardContent, Button, TextField, CircularProgress, Typography, Box, Avatar, Paper } from '@mui/material';
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import socket from '../../socket';
 import { apiUrl } from '../../api/config';
 
@@ -9,7 +9,6 @@ function ListJobs() {
   const [jobName, setJobName] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchJobs() {
@@ -27,11 +26,13 @@ function ListJobs() {
   }, []);
 
   function handleJobCreate(data) {
-    setJobs((jobs) => [...jobs, data]);
+    console.log(data)
+    setJobs(jobs => [data, ...jobs]);
   }
   
+  
   function handleJobDelete(jobId) {
-    const updatedJobs = jobs.filter(job => job.job_id !== jobId);
+    const updatedJobs = jobs.filter(job => job.jobId !== jobId);
     setJobs(updatedJobs);
   }
 
@@ -91,13 +92,8 @@ function ListJobs() {
         }),
       });
       const data = await response.json();
+      console.log(data)
       setLoading(false);
-
-      if (data.status === 200) {
-        navigate.push(`/job/${data.jobId}`);
-      } else {
-        throw new Error(data.error);
-      }
     } catch (error) {
       console.error('Error creating job:', error);
       setLoading(false);
@@ -152,7 +148,7 @@ function ListJobs() {
         </Grid>
         <Grid container spacing={2}>
         {jobs.map((job) => (
-          <Grid item xs={12} sm={6} md={4} key={job.job_id}>
+          <Grid item xs={12} sm={6} md={4} key={job.jobId}>
             <Paper sx={{ p: 2, borderRadius: 4 }}>
               <Box>
               <Card>
@@ -164,10 +160,10 @@ function ListJobs() {
                   <p>{job.description}</p>
                 </CardContent>
                 <CardActions>
-                  <Button component={Link} to={`/job/${job.job_id}`} variant="contained" color="primary" size="small">
+                  <Button component={Link} to={`/job/${job.jobId}`} variant="contained" color="primary" size="small">
                     View Job
                   </Button>
-                  <Button onClick={() => handleDeleteJob(job.job_id)} variant="contained" color="secondary" size="small" style={{marginLeft: '10px'}}>
+                  <Button onClick={() => handleDeleteJob(job.jobId)} variant="contained" color="secondary" size="small" style={{marginLeft: '10px'}}>
                     Delete Job
                   </Button>
                 </CardActions>

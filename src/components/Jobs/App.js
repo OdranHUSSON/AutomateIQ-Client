@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import io from 'socket.io-client';
-import { Button, Grid, LinearProgress, Box, ButtonGroup, Paper, Card, CardContent, CardHeader, Avatar, Typography } from '@mui/material';
+import { Button, Grid, LinearProgress, Box, ButtonGroup, Paper, Card, CardContent, CardHeader, Avatar, TextField, Typography } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import MarkdownViewer from '../MarkdownViewer/MarkdownViewer';
 import TaskTable from '../Tasks/Tasks';
@@ -8,6 +8,17 @@ import AddTaskForm from '../Tasks/addTaskForm';
 import socket from '../../socket';
 import { apiUrl } from '../../api/config';
 import JobId from './JobIdField';
+import AddArgumentForm from './AddArgumentForm';
+import ArgumentForm from './ArgumentForm';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import AddIcon from '@mui/icons-material/Add';
+import CardActions from '@mui/material/CardActions';
+import IconButton from '@mui/material/IconButton';
+
+
 
 function App({ jobId }) {
   const [job, setJob] = useState({});
@@ -15,6 +26,11 @@ function App({ jobId }) {
   const [done, setDone] = useState(false);
   const [displayTask, setDisplayTask] = useState('');
   const [isRestarting, setIsRestarting] = useState(false);
+  const [argumentsState, setArgumentsState] = useState(null);
+  const [openAddTaskDialog, setOpenAddTaskDialog] = useState(false);
+  const [openAddArgumentDialog, setOpenAddArgumentDialog] = useState(false);
+
+
 
   // TASKS 
   const [tasks, setTasks] = useState([]);
@@ -105,16 +121,15 @@ function App({ jobId }) {
     if(jobId) {
       const response = await fetch(`${apiUrl}/jobs/${jobId}`);
       let data = await response.json();
-      console.log(data)
-      data.Job.jobId = data.Job.job_id;
-      setJob(data.Job);
+      data.Job.jobId = jobId;
+      setJob(data.Job);      
       setAllTasks(data.Job)
-      handleJobUpdate(data.Job.jobId, false)
+      setArgumentsState(data.Job.arguments);
+      handleJobUpdate(data.Job, false)
       setProgress(data.Job.progress)
       return data;
     }
   }
-
 
   function handleViewOutput(task) {
     setDisplayTask(task);
@@ -183,10 +198,15 @@ function App({ jobId }) {
   async function restartJob() {
     try {
       setIsRestarting(true);
-      const response = await fetch(`${apiUrl}/job/restart/${jobId}`);
+      const response = await fetch(`${apiUrl}/job/restart/${jobId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ arguments: argumentsState })
+      });
       const data = await response.json();
-      console.log(response)
-
+  
       if (response.ok) {
         console.log('Job restarted successfully:', data);
         setTasks(tasks => tasks.map(task => ({...task, status: 'pending'})));
@@ -201,6 +221,25 @@ function App({ jobId }) {
     }
   }
   
+  function handleUpdateArguments(newArguments) {
+    setArgumentsState(newArguments);
+  }
+
+  const handleOpenAddTaskDialog = () => {
+    setOpenAddTaskDialog(true);
+  };
+  
+  const handleCloseAddTaskDialog = () => {
+    setOpenAddTaskDialog(false);
+  };
+  
+  const handleOpenAddArgumentDialog = () => {
+    setOpenAddArgumentDialog(true);
+  };
+  
+  const handleCloseAddArgumentDialog = () => {
+    setOpenAddArgumentDialog(false);
+  };
   
 
   return (
@@ -216,7 +255,12 @@ function App({ jobId }) {
             )}
             <CardContent>
               <Box mb={2}>
-                <Typography variant='p'>{job.description}</Typography>
+                <TextField 
+                  variant="outlined"
+                  label="Description"
+                  fullWidth
+                  value={job.description}
+                />
               </Box>
               <Box mt={2} mb={2}>
                 <JobId jobId={jobId} />
@@ -245,6 +289,39 @@ function App({ jobId }) {
                 )}
               </Box>
             </CardContent>
+            </Card>
+          </Paper>
+          <Paper sx={{ p: 2, mt:2, borderRadius: 4 }}>
+            <Card>
+            <CardHeader
+                title={"Arguments"}
+                avatar={<Avatar>{"A"}</Avatar>}
+            />
+            <CardContent>
+              <Box mt={2} mb={2}>
+                {jobId && argumentsState && (
+                  <ArgumentForm jobArguments={argumentsState} argumentChangeCallback={handleUpdateArguments} />
+                )}
+              </Box>
+              <Box mb={2}>
+                <Dialog open={openAddArgumentDialog} onClose={handleCloseAddArgumentDialog} aria-labelledby="form-dialog-title">
+                  <DialogTitle id="form-dialog-title">Add Argument</DialogTitle>
+                  <DialogContent>
+                    <AddArgumentForm jobId={jobId} callback={updateJobAndTasks} />
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleCloseAddArgumentDialog} color="primary">
+                      Cancel
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </Box>
+            </CardContent>
+            <CardActions sx={{ justifyContent: 'flex-end' }}>
+              <IconButton color="primary" onClick={handleOpenAddArgumentDialog}>
+                <AddIcon />
+              </IconButton>
+            </CardActions>
           </Card>
         </Paper>
         <Paper sx={{ p: 2, mt:4, borderRadius: 4 }}>
@@ -259,21 +336,49 @@ function App({ jobId }) {
                   <TaskTable tasks={tasks} onTaskUpdate={handleTaskUpdate} handleViewOutput={handleViewOutput} jobId={jobId} />                
                 )}
               </Box>
-              
-              <Typography variant='h5'>Add a task</Typography>
-              <AddTaskForm jobId={jobId} tasks={tasks} />
+              <Box mb={2}>
+                <Dialog open={openAddTaskDialog} onClose={handleCloseAddTaskDialog} aria-labelledby="form-dialog-title">
+                  <DialogTitle id="form-dialog-title">Add a Task</DialogTitle>
+                  <DialogContent>
+                    <AddTaskForm jobId={jobId} tasks={tasks} jobArguments={argumentsState} />
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={handleCloseAddTaskDialog} color="primary">
+                      Cancel
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </Box>
             </CardContent>
+            <CardActions sx={{ justifyContent: 'flex-end' }}>
+              <IconButton color="primary" onClick={handleOpenAddTaskDialog}>
+                <AddIcon />
+              </IconButton>
+            </CardActions>
           </Card>
         </Paper>
       </Grid>
       <Grid item xs={8}>
         <Paper sx={{ p: 2, borderRadius: 4 }}>
           <Box mt={2} mb={2}>
-            <h2>Outputs</h2>
+          <Typography variant='h5'>Outputs</Typography>
           </Box>
-          <Box mt={2} mb={2} borderRadius={4}>
-            {displayTask && <MarkdownViewer task={displayTask} />}
+          {tasks.map((task, index) => (
+          <Box key={index} mt={2} mb={2} borderRadius={4}>
+            <Typography variant='h6'>{task.name}</Typography>
+            {(task.status === 'done' || task.status === 'error') && (
+              task.output.endsWith('.mp3') ? (
+                <audio controls>
+                  <source src={`${apiUrl}/${task.output}`} type="audio/mpeg" />
+                  Your browser does not support the audio element.
+                </audio>
+              ) : (
+                <MarkdownViewer task={task} />
+              )
+            )}
           </Box>
+        ))}
+
         </Paper>
       </Grid>
     </Grid>
