@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, Paper } from '@mui/material';
-import MarkdownViewer from '../MarkdownViewer/MarkdownViewer';
+import MarkdownViewer from './MarkdownViewer';
 import { apiUrl } from '../../api/config';
 
 export default function OutputComponent({ tasks }) {
