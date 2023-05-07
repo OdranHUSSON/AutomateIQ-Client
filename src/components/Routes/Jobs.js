@@ -3,9 +3,9 @@ import { Button, Grid, LinearProgress, Box, ButtonGroup, Paper, Card, CardConten
 import RefreshIcon from '@mui/icons-material/Refresh';
 import socket from '../../socket';
 import { apiUrl } from '../../api/config';
-import JobId from './JobIdField';
+import JobId from '../Jobs/JobIdField';
 import OutputComponent from '../Tasks/outputComponent';
-import ArgumentComponent from './ArgumentComponent';
+import ArgumentComponent from '../Jobs/ArgumentComponent';
 import TaskComponent from '../Tasks/TaskComponent';
 
 

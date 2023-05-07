@@ -83,28 +83,19 @@ const AddTaskForm = ({ jobId, tasks, jobArguments }) => {
       <input type="hidden" name="jobId" value={jobId} />
       {allowedCommands  && (
         <FormControl variant="outlined" fullWidth margin="normal">
-        <InputLabel id="task-label">Task</InputLabel>
-        <Autocomplete
-          options={Object.keys(allowedCommands)} // Use Object.keys to get the option keys
-          getOptionLabel={(option) => allowedCommands[option].label} // Use the label property of the corresponding object
-          value={selectedTask}
-          onChange={(event, newValue) => handleTaskChange(newValue)}
-          renderInput={(params) => <TextField {...params} label="Task" />}
-        />
-      </FormControl>
-
+          <InputLabel id="task-label">Task</InputLabel>
+          <Autocomplete
+            options={Object.keys(allowedCommands)} 
+            getOptionLabel={(option) => allowedCommands[option].label} 
+            value={selectedTask}
+            onChange={(event, newValue) => handleTaskChange(newValue)}
+            renderInput={(params) => <TextField {...params} label="Task" />}
+          />
+        </FormControl>
       )}
 
-      <TextField
-          key={"name"}
-          name={"name"}
-          label={"name"}
-          fullWidth
-          margin="normal"
-          onChange={handleNameChange}
-        />
 
-      {selectedTask && allowedCommands && allowedCommands[selectedTask].arguments.map((arg) => (
+      {selectedTask && allowedCommands && (
         <TextField
             key={"name"}
             name={"name"}
@@ -113,46 +104,46 @@ const AddTaskForm = ({ jobId, tasks, jobArguments }) => {
             margin="normal"
             onChange={handleNameChange}
         />
+      )}
+
+      {allowedCommands[selectedTask]?.arguments.map((arg) => (
+          <TextField
+              key={arg}
+              name={arg}
+              label={arg}
+              fullWidth
+              margin="normal"
+              value={args[arg] || ''}
+              multiline
+              onChange={handleArgChange}
+          />
       ))}
 
-        {allowedCommands[selectedTask]?.arguments.map((arg) => (
-            <TextField
-                key={arg}
-                name={arg}
-                label={arg}
-                fullWidth
-                margin="normal"
-                value={args[arg] || ''}
-                multiline
-                onChange={handleArgChange}
+      <Grid container spacing={2} paddingBottom={2} paddingTop={1}>
+      {tasks && tasks.map(task => (
+          <Grid item>
+            <Chip color="primary"
+                key={task.id}
+                label={" 🪄 " + task.name}
+                onClick={() => copyToClipboard(task.id)}
             />
-        ))}
-
-        <Grid container spacing={2} paddingBottom={2} paddingTop={1}>
-          {tasks && tasks.map(task => (
-              <Grid item>
-                <Chip color="primary"
-                    key={task.id}
-                    label={" 🪄 " + task.name}
-                    onClick={() => copyToClipboard(task.id)}
-                />
-              </Grid>
-          ))}
-          {jobArguments && jobArguments.map(argument => (
-            <Grid item>
-              <Chip color="success"
-                key={argument.name} 
-                label={" 🪄 " + argument.name}
-                onClick={() => copyToClipboard(argument.name, 'variable')}
-              />
-            </Grid>
-          ))}
+          </Grid>
+      ))}
+      {jobArguments && jobArguments.map(argument => (
+        <Grid item>
+          <Chip color="success"
+            key={argument.name} 
+            label={" 🪄 " + argument.name}
+            onClick={() => copyToClipboard(argument.name, 'variable')}
+          />
         </Grid>
+      ))}
+      </Grid>
 
 
-        <Button type="submit" variant="contained" color="primary">
-          Add Task
-        </Button>
+      <Button type="submit" variant="contained" color="primary">
+      Add Task
+      </Button>
       </form>
   );
 };
