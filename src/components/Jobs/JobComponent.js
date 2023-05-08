@@ -1,5 +1,7 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, Avatar, TextField, Box } from '@mui/material';
+import { Card, CardContent, CardHeader, Avatar, TextField, Box, Paper, LinearProgress, ButtonGroup, Button } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import { jobIdField } from './JobIdField'
 
 function JobComponent({ job, progress, handleReset, restartJob, isRestarting, jobId, updateJobAndTasks }) {
   return (
@@ -21,7 +23,7 @@ function JobComponent({ job, progress, handleReset, restartJob, isRestarting, jo
             />
             </Box>
             <Box mt={2} mb={2}>
-            <JobId jobId={jobId} />
+            <jobIdField jobId={jobId} />
             </Box>
             <Box mb={2}>
             {jobId && job.name && (

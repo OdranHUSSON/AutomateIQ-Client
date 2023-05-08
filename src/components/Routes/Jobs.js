@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
-import { Button, Grid, LinearProgress, Box, ButtonGroup, Paper, Card, CardContent, CardHeader, Avatar, TextField, Typography } from '@mui/material';
-import RefreshIcon from '@mui/icons-material/Refresh';
+import { Grid } from '@mui/material';
 import socket from '../../socket';
 import { apiUrl } from '../../api/config';
-import JobId from '../Jobs/JobIdField';
 import OutputComponent from '../Tasks/outputComponent';
 import ArgumentComponent from '../Jobs/ArgumentComponent';
 import TaskComponent from '../Tasks/TaskComponent';
-
-
+import JobComponent from '../Jobs/JobComponent';
 
 function App({ jobId }) {
   const [job, setJob] = useState({});
@@ -180,7 +177,6 @@ function App({ jobId }) {
     };
   }, [socket]);
   
-  
   async function restartJob() {
     try {
       setIsRestarting(true);
@@ -211,58 +207,29 @@ function App({ jobId }) {
     setArgumentsState(newArguments);
   }
   
-
   return (
     <Grid container spacing={2}>
       <Grid item xs={4}>
-        <Paper sx={{ p: 2, borderRadius: 4 }}>
-          <Card>
-            {job.name && (
-              <CardHeader
-                title={job.name}
-                avatar={<Avatar>{job.name[0]}</Avatar>}
-              />
-            )}
-            <CardContent>
-              <Box mb={2}>
-                <TextField 
-                  variant="outlined"
-                  label="Description"
-                  fullWidth
-                  value={job.description}
-                />
-              </Box>
-              <Box mt={2} mb={2}>
-                <JobId jobId={jobId} />
-              </Box>
-              <Box mb={2}>
-                {jobId && job.name && (
-                  <div>
-                    {progress === 0 && <LinearProgress />} 
-                    {progress > 0 && <LinearProgress variant="determinate" value={progress} />}
-                    <form>
-                      <ButtonGroup fullWidth aria-label="outlined primary button group">                
-                        <Button type="reset" onClick={handleReset}>Reset</Button>
-                        <Button
-                          variant="contained"
-                          onClick={restartJob}
-                          disabled={isRestarting || !jobId}
-                         >
-                          Start
-                        </Button>
-                        <Button disabled={!jobId} type="button" onClick={updateJobAndTasks} title={"force update"}>
-                          <RefreshIcon />
-                        </Button>
-                      </ButtonGroup>
-                    </form>
-                  </div>
-                )}
-              </Box>
-            </CardContent>
-            </Card>
-          </Paper>
-          <ArgumentComponent argumentsState={argumentsState} jobId={jobId} handleUpdateArguments={handleUpdateArguments} />
-          <TaskComponent jobId={jobId} tasks={tasks} handleTaskUpdate={handleTaskUpdate} argumentsState={argumentsState}  />
+        <JobComponent 
+          job={job}
+          progress={progress}
+          handleReset={handleReset}
+          restartJob={restartJob}
+          isRestarting={isRestarting}
+          jobId={jobId}
+          updateJobAndTasks={updateJobAndTasks}
+        />
+        <ArgumentComponent 
+          argumentsState={argumentsState}
+          jobId={jobId}
+          handleUpdateArguments={handleUpdateArguments} 
+        />
+        <TaskComponent 
+          jobId={jobId}
+          tasks={tasks}
+          handleTaskUpdate={handleTaskUpdate}
+          argumentsState={argumentsState}
+        />
       </Grid>
       <Grid item xs={8}>
         <OutputComponent tasks={tasks} />
