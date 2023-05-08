@@ -15,11 +15,14 @@ function JobComponent({ job, progress, handleReset, restartJob, isRestarting, jo
         )}
         <CardContent>
             <Box mb={2}>
-            <TextField 
+            <TextField
                 variant="outlined"
                 label="Description"
                 fullWidth
-                value={job.description}
+                value={job.description ??   ''}
+                InputProps={{
+                    readOnly: true,
+                }}
             />
             </Box>
             <Box mt={2} mb={2}>
