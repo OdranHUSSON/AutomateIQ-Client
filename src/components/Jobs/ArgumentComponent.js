@@ -47,7 +47,7 @@ export default function ArgumentComponent({ argumentsState, jobId, handleUpdateA
                 )}
               </Box>
               <Box mb={2}>
-                <Dialog open={openAddArgumentDialog} onClose={handleCloseAddArgumentDialog} aria-labelledby="form-dialog-title">
+                <Dialog open={openAddArgumentDialog} onClose={handleCloseAddArgumentDialog} aria-labelledby="form-dialog-title" fullWidth={true}>
                   <DialogTitle id="form-dialog-title">Add Argument</DialogTitle>
                   <DialogContent>
                     <AddArgumentForm jobId={jobId} callback={updateJobAndTasks} />

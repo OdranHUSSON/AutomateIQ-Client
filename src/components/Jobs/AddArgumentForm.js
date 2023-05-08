@@ -56,10 +56,12 @@ const AddArgumentForm = ({ jobId, callback }) => {
         />
       </FormControl>
       <FormControl fullWidth margin='dense'>
-        <InputLabel>Argument Type</InputLabel>
+        <InputLabel id="argument-type-label">Argument Type</InputLabel>
         <Select
           value={type}
           onChange={handleTypeChange}
+          labelId="argument-type-label"
+          label="Argument Type"
         >
           <MenuItem value="string">String</MenuItem>
           <MenuItem value="number">Number</MenuItem>
