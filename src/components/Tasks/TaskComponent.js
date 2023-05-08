@@ -37,7 +37,7 @@ export default function TaskComponent({ tasks, jobId, handleTaskUpdate, argument
                 )}
               </Box>
               <Box mb={2}>
-                <Dialog open={openAddTaskDialog} onClose={handleCloseAddTaskDialog} aria-labelledby="form-dialog-title">
+                <Dialog open={openAddTaskDialog} onClose={handleCloseAddTaskDialog} aria-labelledby="form-dialog-title" fullWidth={true}>
                   <DialogTitle id="form-dialog-title">Add a Task</DialogTitle>
                   <DialogContent>
                     <AddTaskForm jobId={jobId} tasks={tasks} jobArguments={argumentsState} />
