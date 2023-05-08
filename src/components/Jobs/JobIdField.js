@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button, TextField, Box } from '@mui/material';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 
-function JobId({ jobId }) {
+export function JobIdField({ jobId }) {
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopyClick = () => {
@@ -35,4 +35,4 @@ function JobId({ jobId }) {
   );
 }
 
-export default JobId;
+export default JobIdField;
