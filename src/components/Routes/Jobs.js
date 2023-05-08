@@ -13,6 +13,7 @@ function App({ jobId }) {
   const [done, setDone] = useState(false);
   const [displayTask, setDisplayTask] = useState('');
   const [isRestarting, setIsRestarting] = useState(false);
+  const [aiDescription, setAiDescription] = useState('');
   const [argumentsState, setArgumentsState] = useState(null);
 
   // TASKS 
@@ -28,7 +29,6 @@ function App({ jobId }) {
     }));
     setTasks(newTasks);
   };
-  
 
   const addTask = (task) => {
     const newTask = {
@@ -55,7 +55,6 @@ function App({ jobId }) {
   
     setTasks(newTasks);
   };
-  
 
   const handleTaskUpdate = (updatedTask) => {
     // Find the task with the given id and update its status and output
@@ -105,7 +104,7 @@ function App({ jobId }) {
       const response = await fetch(`${apiUrl}/jobs/${jobId}`);
       let data = await response.json();
       data.Job.jobId = jobId;
-      setJob(data.Job);      
+      setJob(data.Job);
       setAllTasks(data.Job)
       setArgumentsState(data.Job.arguments);
       handleJobUpdate(data.Job, false)
@@ -143,7 +142,7 @@ function App({ jobId }) {
         deleteTask(data.taskId, true);
       }
     });
-  
+
     socket.on('Task:Update', (data) => {
       console.log(`TASK UPDATE CALLED ${data.taskId}`);
       console.log(data)
@@ -151,21 +150,21 @@ function App({ jobId }) {
         handleTaskUpdate(data);
       }
     });
-  
+
     socket.on('Task:Create', (data) => {
       if (data.jobId === jobId ) {
         addTask(data);
       }
     });
-  
+
     socket.on('disconnect', () => {
       console.log('Disconnected from server');
     });
-  
+
     socket.on('connect_error', (err) => {
       console.log(`connect_error due to ${err.message}`);
     });
-  
+
     // Remove event listeners when component unmounts
     return () => {
       socket.off('connect');
@@ -176,7 +175,11 @@ function App({ jobId }) {
       socket.off('connect_error');
     };
   }, [socket]);
-  
+
+  React.useEffect(() => {
+    setAiDescription(getAiDescription(tasks))
+  }, [tasks]);
+
   async function restartJob() {
     try {
       setIsRestarting(true);
@@ -188,7 +191,7 @@ function App({ jobId }) {
         body: JSON.stringify({ arguments: argumentsState })
       });
       const data = await response.json();
-  
+
       if (response.ok) {
         console.log('Job restarted successfully:', data);
         setTasks(tasks => tasks.map(task => ({...task, status: 'pending'})));
@@ -202,15 +205,40 @@ function App({ jobId }) {
       setIsRestarting(false);
     }
   }
-  
+
+  async function getAiDescription (tasks) {
+    let prePrompt = "Context: task automation application that can be chained and uses AI. A job can be composed of one or more tasks. From the list of task titles, write a short description to describe what the job is for.";
+    console.log(tasks);
+    let descriptionTasks = tasks.map(task => task.name);
+
+    let prompt = prePrompt + "\n\n" + descriptionTasks.join("\n\n");
+    console.log(prompt);
+    try {
+      const response = await fetch(`${apiUrl}/api/fastChatGPT`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          details: prompt
+        })
+      });
+
+      return response.text;
+    } catch (error) {
+      console.error('Error on fetching ai job description:', error);
+    }
+  }
+
+
   function handleUpdateArguments(newArguments) {
     setArgumentsState(newArguments);
   }
-  
+
   return (
     <Grid container spacing={2}>
       <Grid item xs={4}>
-        <JobComponent 
+        <JobComponent
           job={job}
           progress={progress}
           handleReset={handleReset}
@@ -219,12 +247,12 @@ function App({ jobId }) {
           jobId={jobId}
           updateJobAndTasks={updateJobAndTasks}
         />
-        <ArgumentComponent 
+        <ArgumentComponent
           argumentsState={argumentsState}
           jobId={jobId}
-          handleUpdateArguments={handleUpdateArguments} 
+          handleUpdateArguments={handleUpdateArguments}
         />
-        <TaskComponent 
+        <TaskComponent
           jobId={jobId}
           tasks={tasks}
           handleTaskUpdate={handleTaskUpdate}
@@ -236,7 +264,7 @@ function App({ jobId }) {
       </Grid>
     </Grid>
   );
-  
+
 }
 
 export default App;
