@@ -46,7 +46,7 @@ function TaskTable({ tasks, jobId }) {
   };
   
   const deleteTask = async (taskId) => {
-    console.log(jobId, taskId)
+    console.log("delete", taskId)
     try {
       const response = await axios.delete(`http://localhost:3000/job/${jobId}/task/${taskId}`);
       if (response.data.status === "ok") {
@@ -97,16 +97,16 @@ function TaskTable({ tasks, jobId }) {
               <CircularProgress size={20}/>
             ) : (
               <div>
-                <IconButton onClick={(event) => handleMenuClick(event, task.id)}>
+                <IconButton onClick={(event) => handleMenuClick(event, task.taskId)}>
                     <MoreVertIcon />
                 </IconButton>
                 {task.status === 'done' || task.status === 'error' || task.status === 'pending' ? (
                   <TaskMenu
-                    anchorEl={anchorEls[task.id]}
-                    handleMenuClose={() => handleMenuClose(task.id)}
+                    anchorEl={anchorEls[task.taskId]}
+                    handleMenuClose={() => handleMenuClose(task.taskId)}
                     task={task}
-                    restartTask={restartTask}
-                    deleteTask={deleteTask}
+                    restartTask={() => restartTask(task.taskId)}
+                    deleteTask={() => deleteTask(task.taskId)}
                   />
                 ) : null}
               </div>

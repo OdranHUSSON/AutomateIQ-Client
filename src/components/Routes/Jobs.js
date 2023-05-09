@@ -11,7 +11,6 @@ function App({ jobId }) {
   const [job, setJob] = useState({});
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
-  const [displayTask, setDisplayTask] = useState('');
   const [isRestarting, setIsRestarting] = useState(false);
   const [argumentsState, setArgumentsState] = useState(null);
 
@@ -20,32 +19,41 @@ function App({ jobId }) {
 
   const setAllTasks = (response) => {
     const newTasks = response.tasks.map((task) => ({
-      id: task.taskId,
-      job_id: task.jobId,
+      taskId: task.taskId,
+      jobId: task.jobId,
       status: task.status,
       name: task.name,
       output: task.output,
     }));
     setTasks(newTasks);
   };
-  
 
   const addTask = (task) => {
     const newTask = {
-      id: task.taskId,
-      job_id: task.jobId,
+      taskId: task.taskId,
+      jobId: task.jobId,
       status: task.status,
       name: task.name,
       output: task.output
     };
-
-    setTasks([...tasks, newTask]);
+  
+    const existingTaskIndex = tasks.findIndex(t => t.taskId === newTask.taskId);
+    if (existingTaskIndex !== -1) {
+      setTasks(tasks => {
+        const updatedTasks = [...tasks];
+        updatedTasks[existingTaskIndex] = {...updatedTasks[existingTaskIndex], status: newTask.status, output: newTask.output};
+        return updatedTasks;
+      });
+    } else {
+      setTasks([...tasks, newTask]);
+    }
   };
+  
 
   const addMultipleTasks = (tasks) => {
     const newTasks = tasks.map(task => ({
-      id: task.taskId,
-      job_id: task.jobId,
+      taskId: task.taskId,
+      jobId: task.jobId,
       status: task.status,
       name: task.name,
       output: task.output
@@ -58,31 +66,25 @@ function App({ jobId }) {
   
 
   const handleTaskUpdate = (updatedTask) => {
-    // Find the task with the given id and update its status and output
     setTasks(tasks => {
       return tasks.map(task => {
-        if (task.id === updatedTask.taskId) {
+        if (task.taskId === updatedTask.taskId) {
           return { ...task, status: updatedTask.status, output: updatedTask.output };
         } else {
           return task;
         }
       });
     });
-  
-    if(updatedTask.status === 'done') {
-      setDisplayTask(updatedTask);
-    }
   };
 
   const deleteTask = (taskId) => {
-    setTasks(tasks.filter(task => task.id !== taskId));
-  };
+    setTasks(tasks => tasks.filter(task => task.taskId !== taskId));
+  };  
 
   function reset() {
     setProgress(0);
     setTasks([]);
     setDone(false);
-    setDisplayTask('');
   }
 
   const handleReset = async (event) => {
@@ -114,10 +116,6 @@ function App({ jobId }) {
     }
   }
 
-  function handleViewOutput(task) {
-    setDisplayTask(task);
-  }
-
   React.useEffect(() => {
     updateJobAndTasks();
   }, [jobId]);
@@ -144,6 +142,13 @@ function App({ jobId }) {
       }
     });
   
+    socket.on('Task:Create', (data) => {
+      console.log(data)
+      if (data.jobId === jobId ) {
+        addTask(data);
+      }
+    });
+
     socket.on('Task:Update', (data) => {
       console.log(`TASK UPDATE CALLED ${data.taskId}`);
       console.log(data)
@@ -151,10 +156,11 @@ function App({ jobId }) {
         handleTaskUpdate(data);
       }
     });
-  
-    socket.on('Task:Create', (data) => {
+
+    socket.on('Task:Delete', (data) => {
+      console.log(data)
       if (data.jobId === jobId ) {
-        addTask(data);
+        deleteTask(data.taskId);
       }
     });
   
@@ -169,9 +175,10 @@ function App({ jobId }) {
     // Remove event listeners when component unmounts
     return () => {
       socket.off('connect');
-      socket.off('Job:Update', handleJobUpdate);
-      socket.off('Task:Update', handleTaskUpdate);
+      socket.off('Job:Update', handleJobUpdate);      
       socket.off('Task:Create', addTask);
+      socket.off('Task:Update', handleTaskUpdate);
+      socket.off('Task:Delete', deleteTask);
       socket.off('disconnect');
       socket.off('connect_error');
     };
