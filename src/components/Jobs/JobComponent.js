@@ -19,16 +19,15 @@ function JobComponent({ job, progress, handleReset, restartJob, isRestarting, jo
                 variant="outlined"
                 label="Description"
                 fullWidth
-                value={job.description}
+                value={job.description || ''}
             />
             </Box>
             <Box mt={2} mb={2}>
             <JobIdField jobId={jobId} />
             </Box>
-            <Box mb={2}>
+            
             {jobId && job.name && (
-                <div>
-                {progress === 0 && <LinearProgress />} 
+                <Box mb={2}>
                 {progress > 0 && <LinearProgress variant="determinate" value={progress} />}
                 <form>
                     <ButtonGroup fullWidth aria-label="outlined primary button group">                
@@ -45,9 +44,8 @@ function JobComponent({ job, progress, handleReset, restartJob, isRestarting, jo
                     </Button>
                     </ButtonGroup>
                 </form>
-                </div>
+                </Box>
             )}
-            </Box>
         </CardContent>
         </Card>
     </Paper>
