@@ -125,7 +125,7 @@ const AddTaskForm = ({ jobId, tasks, jobArguments }) => {
             <Chip color="primary"
                 key={task.id}
                 label={" 🪄 " + task.name}
-                onClick={() => copyToClipboard(task.id)}
+                onClick={() => copyToClipboard(task.taskId)}
             />
           </Grid>
       ))}
